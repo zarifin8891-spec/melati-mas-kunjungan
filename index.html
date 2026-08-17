@@ -11,6 +11,15 @@
 @media(max-width:760px){.sidebar{display:block;position:fixed;left:-285px;top:0;bottom:0;width:270px;height:100vh;z-index:50;transition:left .22s ease;box-shadow:10px 0 30px rgba(0,0,0,.18)}.sidebar.open{left:0}.mobile-overlay{display:none;position:fixed;inset:0;background:rgba(16,24,40,.35);z-index:40}.mobile-overlay.show{display:block}.mobile-menu-btn{display:block}.mobile-only{display:block}.content{padding:16px}.topbar{padding:0 12px;height:auto;min-height:70px;gap:8px}.topbar h1{font-size:18px}.topbar small{display:none}.topbar .btn{padding:9px 10px}.topbar .primary{font-size:12px}.topbar .secondary{font-size:12px}.cards{grid-template-columns:1fr 1fr}.total-box{grid-column:1/-1;grid-row:auto}.form-grid,.setting-grid{grid-template-columns:1fr}.table-wrap{max-height:65vh}th{top:0}th:last-child,td:last-child{position:sticky;right:0;background:#fff;z-index:4;box-shadow:-5px 0 8px rgba(16,24,40,.06)}th:last-child{z-index:6}.actions{gap:5px}.iconbtn{padding:9px 10px;font-size:12px;min-width:54px}.modal{padding:10px}.modal-box{max-height:94vh;padding:16px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#176b5d">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js');
+  });
+}
+</script>
 </head>
 <body>
 <div id="authScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f4f7fb;padding:20px"><div style="width:min(420px,100%);background:#fff;border:1px solid #e6eaf0;border-radius:18px;padding:28px;box-shadow:0 12px 40px rgba(16,24,40,.1)"><div style="display:flex;align-items:center;gap:12px;margin-bottom:20px"><div class="logo">MM</div><div><b>Melati Mas Residence</b><br><small style="color:#667085">Kunjungan Konsumen — Online</small></div></div><div id="authMsg" style="display:none;margin-bottom:12px;padding:10px;border-radius:9px;background:#eef2f6;color:#344054;font-size:12px"></div><form id="loginForm"><div class="field"><label>EMAIL</label><input id="authEmail" type="email" required placeholder="nama@email.com"></div><div class="field" style="margin-top:12px"><label>PASSWORD</label><input id="authPassword" type="password" required minlength="6"></div><div style="display:flex;gap:8px;margin-top:18px"><button class="btn primary" style="flex:1">Masuk</button><button type="button" class="btn secondary" id="signupBtn">Daftar</button></div></form><p style="font-size:11px;color:#667085;margin-top:18px">Versi online menggunakan database PostgreSQL. Data dapat digunakan bersama dari HP dan laptop setelah login.</p></div></div>
