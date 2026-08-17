@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Melati Mas Residence — Kunjungan Konsumen v2</title>
+<style>
+:root{
+  --bg:#f4f7fb;--panel:#fff;--ink:#172033;--muted:#667085;--line:#e6eaf0;
+  --brand:#176b5d;--brand2:#0f5449;--soft:#e8f4f1;--danger:#b42318;--warn:#b54708;
+  --shadow:0 8px 28px rgba(16,24,40,.07);--radius:16px
+}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit} button{cursor:pointer}
+.app{display:flex;min-height:100vh}.sidebar{width:245px;background:#102f2a;color:#fff;padding:22px 16px;position:sticky;top:0;height:100vh}
+.brand{display:flex;gap:11px;align-items:center;padding:8px 8px 24px;border-bottom:1px solid rgba(255,255,255,.13)}
+.logo{width:42px;height:42px;border-radius:12px;background:#dcefe9;color:#14584d;display:grid;place-items:center;font-weight:800}
+.brand b{font-size:15px;line-height:1.2}.brand small{color:#b7d4ce}
+.nav{margin-top:18px;display:grid;gap:6px}.nav button{border:0;background:transparent;color:#cfe3df;text-align:left;padding:11px 12px;border-radius:10px}
+.nav button.active,.nav button:hover{background:#1b4d44;color:#fff}
+.sidebar .foot{position:absolute;bottom:18px;left:20px;right:20px;color:#9fc0b9;font-size:11px}
+.main{flex:1;min-width:0}.topbar{height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}
+.topbar h1{font-size:19px;margin:0}.topbar small{color:var(--muted)}
+.content{padding:24px 28px;max-width:1600px;margin:auto}
+.page{display:none}.page.active{display:block}
+.grid{display:grid;gap:14px}.cards{grid-template-columns:2fr 1fr 1fr 1fr 1fr;grid-template-rows:auto auto;margin-bottom:18px;align-items:stretch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:17px;box-shadow:var(--shadow)}
+.metric{min-height:92px;display:flex;flex-direction:column;justify-content:center}
+.metric .label{font-size:12px;color:var(--muted)}.metric .value{font-size:27px;font-weight:800;margin-top:8px}.metric .sub{font-size:11px;color:var(--muted);margin-top:4px}
+.total-box{grid-row:span 2;display:grid;grid-template-columns:1fr 1fr;padding:0;overflow:hidden;min-height:154px}
+.total-main{display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid #1f2937}
+.total-main .label{font-size:14px;color:#172033;text-transform:uppercase}
+.total-main .value{font-size:48px;line-height:1;margin-top:10px;font-weight:500;color:#111827}
+.total-side{display:grid;grid-template-rows:1fr 1fr}
+.total-side-item{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.total-side-item:first-child{border-bottom:1px solid #1f2937}
+.total-side-item .label{font-size:13px;color:#172033}
+.total-side-item .value{font-size:25px;line-height:1;margin-top:5px;font-weight:600;color:#111827}
+.status-box{min-height:74px}.status-box .value{font-size:24px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}.panel-head h2{font-size:15px;margin:0}.panel-head small{color:var(--muted)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.field{display:grid;gap:6px}.field label{font-size:11px;color:var(--muted);font-weight:700}.field input,.field select,.field textarea{border:1px solid #d6dbe4;border-radius:9px;padding:9px 10px;background:#fff;outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:#6eafa4;box-shadow:0 0 0 3px #e8f4f1}
+.btn{border:0;border-radius:9px;padding:9px 13px;font-weight:700}.primary{background:var(--brand);color:#fff}.primary:hover{background:var(--brand2)}.secondary{background:#eef2f6;color:#344054}.danger{background:#fee4e2;color:var(--danger)}.ghost{background:transparent;color:var(--brand);border:1px solid #c8ddd8}
+.kpi-note{font-size:11px;color:var(--muted)}
+.chart-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px}.chart{height:235px;display:flex;align-items:center;justify-content:center}.bars{width:100%;height:100%;display:flex;align-items:end;gap:12px;padding:12px 8px}.bar-item{flex:1;display:grid;grid-template-rows:1fr auto;gap:6px;height:100%;min-width:0}.bar{align-self:end;background:linear-gradient(180deg,#2b8b7b,#176b5d);border-radius:8px 8px 2px 2px;min-height:3px}.bar-label{font-size:10px;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.donut-wrap{display:flex;align-items:center;gap:18px;justify-content:center}.donut{width:150px;height:150px;border-radius:50%;position:relative;background:conic-gradient(#176b5d 0 50%,#9ccbc1 50% 75%,#e4efed 75% 100%)}.donut:after{content:"";position:absolute;inset:30px;background:#fff;border-radius:50%}.legend{display:grid;gap:7px;font-size:11px}.legend span{display:flex;gap:7px;align-items:center}.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+table{width:100%;border-collapse:separate;border-spacing:0}th,td{padding:10px 9px;border-bottom:1px solid var(--line);font-size:12px;text-align:left;vertical-align:top}th{background:#f8fafc;color:#667085;font-size:11px;position:sticky;top:0;z-index:2}tr:hover td{background:#fbfdfd}.nowrap{white-space:nowrap}.status{display:inline-block;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:700;background:#eef2f6;color:#344054}.status.closing{background:#dcfae6;color:#067647}.status.ready{background:#e0f2fe;color:#0369a1}.status.interest{background:#fff4e5;color:#b54708}.status.no{background:#fee4e2;color:#b42318}
+.table-wrap{overflow:auto;max-height:62vh;border:1px solid var(--line);border-radius:11px}.actions{display:flex;gap:6px}.iconbtn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 8px;font-size:11px}.iconbtn:hover{background:#f6f8fa}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.form-grid .full{grid-column:1/-1}.modal{position:fixed;inset:0;background:rgba(16,24,40,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:30}.modal.show{display:flex}.modal-box{width:min(760px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:18px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.18)}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-head h2{margin:0;font-size:17px}.close{border:0;background:#eef2f6;border-radius:8px;padding:6px 10px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.setting-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.setting-box{border:1px solid var(--line);border-radius:12px;padding:14px}.setting-box h3{font-size:13px;margin:0 0 10px}.setting-row{display:flex;gap:8px;margin-bottom:8px}.setting-row input{flex:1;border:1px solid var(--line);border-radius:8px;padding:8px}.pill{display:inline-flex;align-items:center;background:#f2f4f7;border-radius:999px;padding:5px 8px;font-size:11px;margin:3px}
+.empty{text-align:center;color:var(--muted);padding:35px}.mobile-only{display:none}
+@media(max-width:1100px){.cards{grid-template-columns:2fr 1fr 1fr}.total-box{grid-row:span 2}.chart-grid{grid-template-columns:1fr}.sidebar{width:210px}}
+@media(max-width:760px){.sidebar{display:none}.mobile-only{display:block}.content{padding:16px}.topbar{padding:0 16px}.cards{grid-template-columns:1fr 1fr}.total-box{grid-column:1/-1;grid-row:auto}.form-grid,.setting-grid{grid-template-columns:1fr}.table-wrap{max-height:65vh}th{top:0}}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="authScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f4f7fb;padding:20px">
+<div style="width:min(420px,100%);background:#fff;border:1px solid #e6eaf0;border-radius:18px;padding:28px;box-shadow:0 12px 40px rgba(16,24,40,.1)">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px"><div class="logo">MM</div><div><b>Melati Mas Residence</b><br><small style="color:#667085">Kunjungan Konsumen — Online</small></div></div>
+<div id="authMsg" style="display:none;margin-bottom:12px;padding:10px;border-radius:9px;background:#eef2f6;color:#344054;font-size:12px"></div>
+<form id="loginForm">
+<div class="field"><label>EMAIL</label><input id="authEmail" type="email" required placeholder="nama@email.com"></div>
+<div class="field" style="margin-top:12px"><label>PASSWORD</label><input id="authPassword" type="password" required minlength="6"></div>
+<div style="display:flex;gap:8px;margin-top:18px"><button class="btn primary" style="flex:1">Masuk</button><button type="button" class="btn secondary" id="signupBtn">Daftar</button></div>
+</form>
+<p style="font-size:11px;color:#667085;margin-top:18px">Versi online menggunakan database PostgreSQL. Data dapat digunakan bersama dari HP dan laptop setelah login.</p>
+</div></div>
+<div class="app" id="appShell" style="display:none">
+<aside class="sidebar">
+  <div class="brand"><div class="logo">MM</div><div><b>Melati Mas<br>Residence</b><br><small>Customer Visit</small></div></div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">Dashboard</button>
+    <button data-page="kunjungan">Data Kunjungan</button>
+    <button data-page="settings">Setting</button>
+  </nav>
+  <div class="foot">Aplikasi online • PostgreSQL</div>
+</aside>
+<main class="main">
+<header class="topbar"><div><h1 id="pageTitle">Dashboard</h1><small id="userInfo">Pengelolaan calon konsumen Melati Mas Residence</small></div><div style="display:flex;gap:8px;align-items:center"><button class="btn secondary" id="importInitialBtn" style="display:none">Import Data Awal</button><button class="btn primary" onclick="openForm()">+ Kunjungan Baru</button><button class="btn secondary" onclick="logout()">Keluar</button></div></header>
+<div class="content">
+
+<section class="page active" id="page-dashboard">
+  <div class="panel">
+    <div class="panel-head"><h2>Periode Analisis</h2><small id="periodText"></small></div>
+    <div class="filters">
+      <div class="field"><label>DARI</label><input type="date" id="dashFrom"></div>
+      <div class="field"><label>SAMPAI</label><input type="date" id="dashTo"></div>
+      <button class="btn primary" onclick="renderDashboard()">Terapkan</button>
+      <button class="btn secondary" onclick="setAllPeriod()">Semua Data</button>
+    </div>
+  </div>
+  <div class="grid cards" id="metrics"></div>
+  <div class="chart-grid">
+    <div class="panel"><div class="panel-head"><h2>Sumber Info</h2><small>Jumlah kunjungan</small></div><div class="chart"><div class="bars" id="sourceBars"></div></div></div>
+    <div class="panel"><div class="panel-head"><h2>Metode Bayar</h2></div><div class="chart"><div class="donut-wrap" id="payDonut"></div></div></div>
+    <div class="panel"><div class="panel-head"><h2>Status Prospek</h2></div><div class="chart"><div class="donut-wrap" id="statusDonut"></div></div></div>
+  </div>
+  <div class="panel"><div class="panel-head"><h2>Kunjungan Terbaru</h2><button class="btn secondary" onclick="go('kunjungan')">Lihat Semua</button></div><div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Nama</th><th>Telepon</th><th>Sumber</th><th>Status</th><th>Penerima</th></tr></thead><tbody id="recentBody"></tbody></table></div></div>
+</section>
+
+<section class="page" id="page-kunjungan">
+  <div class="panel">
+    <div class="panel-head"><div><h2>Daftar Kunjungan Calon Konsumen</h2><small id="countText"></small></div><button class="btn primary" onclick="openForm()">+ Tambah Data</button></div>
+    <div class="filters">
+      <div class="field" style="min-width:250px"><label>CARI</label><input id="search" placeholder="Nama, alamat, telepon, deskripsi..."></div>
+      <div class="field"><label>DARI</label><input type="date" id="listFrom"></div>
+      <div class="field"><label>SAMPAI</label><input type="date" id="listTo"></div>
+      <div class="field"><label>STATUS</label><select id="filterStatus"></select></div>
+      <div class="field"><label>SUMBER</label><select id="filterSource"></select></div>
+      <div class="field"><label>PENERIMA</label><select id="filterReceiver"></select></div>
+      <button class="btn secondary" onclick="resetFilters()">Reset</button>
+      <button class="btn ghost" onclick="exportCSV()">Export CSV</button>
+      <button class="btn ghost" onclick="backupJSON()">Backup JSON</button>
+      <label class="btn ghost">Import JSON<input id="importJson" type="file" accept=".json" hidden></label>
+    </div>
+  </div>
+  <div class="panel"><div class="table-wrap"><table><thead><tr>
+    <th>Tanggal</th><th>Nama Prospek</th><th>Alamat</th><th>Telepon</th><th>Pekerjaan</th><th>Metode Bayar</th><th>Sumber</th><th>Status</th><th>Deskripsi</th><th>Penerima</th><th>Aksi</th>
+  </tr></thead><tbody id="dataBody"></tbody></table></div></div>
+</section>
+
+<section class="page" id="page-settings">
+  <div class="panel"><div class="panel-head"><div><h2>Master Data</h2><small>Daftar pilihan yang digunakan pada form kunjungan</small></div><button class="btn primary" onclick="saveSettings()">Simpan Setting</button></div>
+  <div class="setting-grid" id="settingGrid"></div></div>
+  <div class="panel"><div class="panel-head"><h2>Data & Backup</h2></div>
+    <p class="kpi-note">Data aplikasi tersimpan terpusat di PostgreSQL online. Backup JSON tetap dapat digunakan sebagai arsip lokal.</p>
+    <div class="actions"><button class="btn secondary" onclick="backupJSON()">Backup Semua Data</button><label class="btn ghost">Restore JSON<input id="importJson2" type="file" accept=".json" hidden></label><button class="btn danger" onclick="resetApp()">Kembalikan Data Awal</button></div>
+  </div>
+</section>
+</div>
+</main>
+</div>
+
+<div class="modal" id="modal">
+<div class="modal-box">
+  <div class="modal-head"><h2 id="formTitle">Tambah Kunjungan</h2><button class="close" onclick="closeForm()">Tutup</button></div>
+  <form id="visitForm" onsubmit="saveVisit(event)">
+    <div class="form-grid">
+      <div class="field"><label>Tanggal *</label><input name="tanggal" type="date" required></div>
+      <div class="field"><label>Nama Prospek *</label><input name="nama" required></div>
+      <div class="field"><label>Alamat</label><input name="alamat"></div>
+      <div class="field"><label>Telepon</label><input name="telepon" inputmode="numeric" placeholder="08xxxxxxxxxx"></div>
+      <div class="field"><label>Pekerjaan</label><select name="pekerjaan"></select></div>
+      <div class="field"><label>Metode Bayar</label><select name="pembayaran"></select></div>
+      <div class="field"><label>Sumber Info</label><select name="sumber"></select></div>
+      <div class="field"><label>Status</label><select name="status"></select></div>
+      <div class="field"><label>Penerima</label><select name="penerima"></select></div>
+      <div class="field full"><label>Deskripsi / Catatan</label><textarea name="deskripsi" rows="4" placeholder="Kebutuhan, kendala KPR, anggaran, unit yang diminati, dan catatan follow-up..."></textarea></div>
+    </div>
+    <div class="modal-actions"><button type="button" class="btn secondary" onclick="closeForm()">Batal</button><button class="btn primary">Simpan Data</button></div>
+  </form>
+</div>
+</div>
+
+<script>const SUPABASE_URL = "https://xfujcoemuwopzstxzmir.supabase.co";
+const SUPABASE_KEY = "sb_publishable_tDqFBC0iQVLEp_WUehtBtw_vVbG7BX2";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const INITIAL = {"records": [{"tanggal": "2026-03-18", "nama": "Mulyana", "alamat": "Cilembang TSK", "telepon": "82127471666", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-03-24", "nama": "Weli", "alamat": "Pageningan Cisayong", "telepon": "85223160892", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "", "status": "Tertarik tapi masih membandingkan", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-03-25", "nama": "Sundanese", "alamat": "Ciroyom Cigeureung", "telepon": "", "pekerjaan": "Karyawan", "pembayaran": "Cash Keras", "sumber": "Instagram", "status": "Tertarik tapi masih membandingkan", "deskripsi": "anggaran 180 juta Rmh Pengen Full", "penerima": "Eeng"}, {"tanggal": "2026-03-28", "nama": "Yoga", "alamat": "Rajapolah", "telepon": "89605221110", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Instagram", "status": "Closing/Booking", "deskripsi": "Sementara kapling F-24", "penerima": "Zenal"}, {"tanggal": "2026-03-28", "nama": "Indra", "alamat": "Cileuleus Cisayong", "telepon": "81382736869", "pekerjaan": "Karyawan", "pembayaran": "Cash Keras", "sumber": "", "status": "Tertarik tapi masih membandingkan", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-03-29", "nama": "tmn Farid", "alamat": "Tasik", "telepon": "87735416887", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Rekan/Saudara", "status": "Tertarik tapi masih membandingkan", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-03-29", "nama": "Ema", "alamat": "Bandung", "telepon": "82191358756", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "Usaha D bdg KPR Komersil", "penerima": "Roni"}, {"tanggal": "2026-03-29", "nama": "Hamzah", "alamat": "Indihiang", "telepon": "85559254714", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Tertarik tapi masih membandingkan", "deskripsi": "Cari Pinjam Nama", "penerima": "Zenal"}, {"tanggal": "2026-03-02", "nama": "Dendri", "alamat": "Cisayong", "telepon": "82118431023", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Closing/Booking", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-03-29", "nama": "Hamzah", "alamat": "Indihiang", "telepon": "85559254714", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Instagram", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "Pinjam nama", "penerima": "Roni"}, {"tanggal": "2026-03-30", "nama": "Aini", "alamat": "Pageningan Cisayong", "telepon": "82119358450", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "Harus Pinjam Nama", "penerima": "Roni"}, {"tanggal": "2026-04-01", "nama": "Arif", "alamat": "Gerlong BDG", "telepon": "", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Spanduk", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "Tanya2 Saja", "penerima": "Roni"}, {"tanggal": "2026-04-02", "nama": "Elan Jaelani", "alamat": "Karang Resik", "telepon": "85216105388", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "Kerja Di MBG", "penerima": "Roni"}, {"tanggal": "2026-04-04", "nama": "Rian", "alamat": "Bandung", "telepon": "82180868094", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Instagram", "status": "Tertarik tapi masih membandingkan", "deskripsi": "Rencana Pindah Kerja Ke Tasik", "penerima": "Roni"}, {"tanggal": "2026-04-07", "nama": "Irvan", "alamat": "Ciawi", "telepon": "88973304072", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Tertarik tapi masih membandingkan", "deskripsi": "MBG&Perawat Hermina BDG", "penerima": "Roni"}, {"tanggal": "2026-04-11", "nama": "Janvar", "alamat": "", "telepon": "81315110101", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Spanduk", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "Tanya2 Ke Agus", "penerima": "Roni"}, {"tanggal": "2026-04-13", "nama": "Lia", "alamat": "Banyurasa", "telepon": "82226358536", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Rekan/Saudara", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "Pake Nama Adik Usaha", "penerima": "Roni"}, {"tanggal": "2026-04-17", "nama": "Gunawan", "alamat": "Ciawi", "telepon": "82260291965", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Instagram", "status": "Tertarik tapi masih membandingkan", "deskripsi": "Istri PNS,Suami Usaha", "penerima": "Roni"}, {"tanggal": "2026-04-20", "nama": "Iis", "alamat": "Cisayong", "telepon": "82116480006", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Spanduk", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-04-21", "nama": "Robi", "alamat": "Indihiang", "telepon": "89665662606", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-04-22", "nama": "Ira", "alamat": "Nusawangi Cisayong", "telepon": "85217074411", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Instagram", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-04-24", "nama": "Indra", "alamat": "G.Galunggung", "telepon": "85223169773", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Rekan/Saudara", "status": "Tertarik tapi masih membandingkan", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-04-28", "nama": "Nia", "alamat": "Ciawi", "telepon": "89649525178", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-04-03", "nama": "Amalina", "alamat": "Malangbong", "telepon": "85323221551", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-04-03", "nama": "Mamah Emput", "alamat": "Indihiang", "telepon": "", "pekerjaan": "Wirausaha", "pembayaran": "Cash Keras", "sumber": "Rekan/Saudara", "status": "Tertarik tapi masih membandingkan", "deskripsi": "Mamahnya Tmn IPA", "penerima": "Roni"}, {"tanggal": "2026-04-07", "nama": "Anggi", "alamat": "Cijulang", "telepon": "81263529047", "pekerjaan": "Karyawan", "pembayaran": "Cash Keras", "sumber": "Rekan/Saudara", "status": "Closing/Booking", "deskripsi": "Lunas", "penerima": "Roni"}, {"tanggal": "2026-05-20", "nama": "Bima", "alamat": "Parhon", "telepon": "81386907561", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Rekan/Saudara", "status": "Closing/Booking", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-05-20", "nama": "Edis", "alamat": "Cikatomas", "telepon": "82216829679", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Closing/Booking", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-05-21", "nama": "Latif", "alamat": "Tangerang", "telepon": "85781355417", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Rekan/Saudara", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "karaha", "penerima": "Roni"}, {"tanggal": "2026-05-21", "nama": "Dani", "alamat": "Jakarta", "telepon": "81290763869", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Rekan/Saudara", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "karaha", "penerima": "Roni"}, {"tanggal": "2026-05-21", "nama": "Fadlur", "alamat": "Depok", "telepon": "81292557235", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Rekan/Saudara", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "karaha", "penerima": "Roni"}, {"tanggal": "2026-05-22", "nama": "Gilang", "alamat": "Ciawi", "telepon": "89616339282", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-05-24", "nama": "Aris", "alamat": "Cisayong", "telepon": "81808594432", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-06-01", "nama": "Khoerunnisa", "alamat": "Indihiang", "telepon": "85692361763", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Tidak lanjut/Cari perumahan lain", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-06-01", "nama": "Tiara", "alamat": "Kerenceng", "telepon": "82295955220", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-06-01", "nama": "Risma", "alamat": "Kerenceng", "telepon": "85282939797", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-06-08", "nama": "Nur Holis", "alamat": "Cidahu", "telepon": "82321172150", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-06-10", "nama": "Yuyun", "alamat": "Caringcing", "telepon": "81328257915", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-06-16", "nama": "Irwanto", "alamat": "Dawagung", "telepon": "85328139982", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-06-21", "nama": "Muchtar", "alamat": "Banjaran", "telepon": "82115433499", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-06-21", "nama": "H.Dudung", "alamat": "Cibodas", "telepon": "85925327722", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Rekan/Saudara", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-06-21", "nama": "IDA", "alamat": "Batu Gajah", "telepon": "82317139944", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "Persyaratan tidak Memenuhi", "penerima": "Roni"}, {"tanggal": "2026-06-22", "nama": "Tya", "alamat": "Situ Gede", "telepon": "85723776483", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "Harus Pinjam Nama", "penerima": "Roni"}, {"tanggal": "2026-06-23", "nama": "Firman", "alamat": "Sukahening", "telepon": "87727952922", "pekerjaan": "Karyawan", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-06-27", "nama": "Ujang Gunawan", "alamat": "Cibodas", "telepon": "8993016400", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Tiktok", "status": "Tertarik tapi masih membandingkan", "deskripsi": "", "penerima": "Roni"}, {"tanggal": "2026-07-01", "nama": "Hasbi", "alamat": "Cihaurbeuti", "telepon": "82311991707", "pekerjaan": "Wirausaha", "pembayaran": "K P R", "sumber": "Rekan/Saudara", "status": "Hanya tanya harga/Lihat Lokasi", "deskripsi": "Pernah KPR", "penerima": "Roni"}], "settings": {"pembayaran": ["K P R", "Cash Keras", "Cash Bertahap"], "sumber": ["Instagram", "Tiktok", "Facebook", "Rekan/Saudara", "Spanduk"], "status": ["Closing/Booking", "Siap Booking/Minta Simulasi KPR", "Tertarik tapi masih membandingkan", "Hanya tanya harga/Lihat Lokasi", "Tidak lanjut/Cari perumahan lain"], "penerima": ["Roni", "Holis", "Agung", "Zenal", "Farid", "Eeng", "Security"], "pekerjaan": ["Karyawan", "Wirausaha"]}, "period": {"from": "2026-03-01", "to": "2026-08-31"}};
+let state = {records:[], settings:{pembayaran:[],sumber:[],status:[],penerima:[],pekerjaan:[]}};
+let editId = null;
+
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function fmtDate(s){if(!s)return "-";const d=new Date(s+"T00:00:00");return d.toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"});}
+function waPhone(p){let s=String(p||"").replace(/\D/g,"");if(!s)return "";if(s.startsWith("0"))s="62"+s.slice(1);else if(s.startsWith("8"))s="62"+s;return s;}
+function phoneDisplay(p){let s=String(p||"").replace(/\D/g,"");if(s&&s.startsWith("8"))s="0"+s;return s||"-";}
+function statusClass(s){if(s==="Closing/Booking")return"closing";if(s==="Siap Booking/Minta Simulasi KPR")return"ready";if(s==="Tertarik tapi masih membandingkan")return"interest";if(s==="Tidak lanjut/Cari perumahan lain")return"no";return"";}
+function msg(text,error=false){const el=document.getElementById("authMsg");el.textContent=text;el.style.display="block";el.style.background=error?"#fee4e2":"#eef2f6";el.style.color=error?"#b42318":"#344054";}
+async function initApp(){
+ const {data:{session}}=await sb.auth.getSession();
+ if(session) await showApp(session); else showLogin();
+ sb.auth.onAuthStateChange(async (_event,session)=>{if(session) await showApp(session);else showLogin();});
+}
+function showLogin(){document.getElementById("authScreen").style.display="flex";document.getElementById("appShell").style.display="none";}
+async function showApp(session){
+ document.getElementById("authScreen").style.display="none";document.getElementById("appShell").style.display="flex";
+ document.getElementById("userInfo").textContent="Login: "+(session.user.email||"");
+ await loadOnlineData(); renderDashboard(); renderList(); renderSettings();
+}
+async function logout(){await sb.auth.signOut();}
+document.getElementById("loginForm").addEventListener("submit",async e=>{
+ e.preventDefault();msg("Memproses...");
+ const email=document.getElementById("authEmail").value.trim(),password=document.getElementById("authPassword").value;
+ const {error}=await sb.auth.signInWithPassword({email,password});
+ if(error) msg(error.message,true);
+});
+document.getElementById("signupBtn").addEventListener("click",async()=>{
+ const email=document.getElementById("authEmail").value.trim(),password=document.getElementById("authPassword").value;
+ if(!email||password.length<6){msg("Isi email dan password minimal 6 karakter.",true);return;}
+ const {data,error}=await sb.auth.signUp({email,password});
+ if(error) msg(error.message,true); else msg("Pendaftaran berhasil. Jika email confirmation aktif, cek email lalu masuk.");
+});
+async function loadOnlineData(){
+ const [kr,md]=await Promise.all([
+   sb.from("kunjungan_konsumen").select("*").order("tanggal",{ascending:false}),
+   sb.from("master_data").select("*").eq("active",true).order("sort_order",{ascending:true})
+ ]);
+ if(kr.error){alert("Gagal membaca data kunjungan: "+kr.error.message);return;}
+ if(md.error){alert("Gagal membaca master data: "+md.error.message);return;}
+ state.records=(kr.data||[]).map(r=>({tanggal:r.tanggal,nama:r.nama,alamat:r.alamat||"",telepon:r.telepon||"",pekerjaan:r.pekerjaan||"",pembayaran:r.pembayaran||"",sumber:r.sumber||"",status:r.status||"",deskripsi:r.deskripsi||"",penerima:r.penerima||"",_id:r.id}));
+ state.settings={pembayaran:[],sumber:[],status:[],penerima:[],pekerjaan:[]};
+ (md.data||[]).forEach(x=>{if(state.settings[x.category])state.settings[x.category].push(x.value);});
+}
+function values(key){return state.settings[key]||[];}
+function fillSelect(sel,arr,placeholder="Pilih..."){sel.innerHTML='<option value="">'+placeholder+'</option>'+arr.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");}
+function populateForm(){const f=document.getElementById("visitForm");["pekerjaan","pembayaran","sumber","status","penerima"].forEach(k=>fillSelect(f.elements[k],values(k)));}
+function populateFilters(){fillSelect(document.getElementById("filterStatus"),values("status"),"Semua Status");fillSelect(document.getElementById("filterSource"),values("sumber"),"Semua Sumber");fillSelect(document.getElementById("filterReceiver"),values("penerima"),"Semua Penerima");}
+function go(page){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById("page-"+page).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===page));document.getElementById("pageTitle").textContent=page==="dashboard"?"Dashboard":page==="kunjungan"?"Data Kunjungan":"Setting";if(page==="dashboard")renderDashboard();if(page==="kunjungan")renderList();if(page==="settings")renderSettings();}
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>go(b.dataset.page)));
+function openForm(id=null){editId=id;populateForm();const f=document.getElementById("visitForm");f.reset();document.getElementById("formTitle").textContent=id===null?"Tambah Kunjungan":"Edit Kunjungan";if(id!==null){const r=state.records.find(x=>x._id===id);if(r)Object.keys(r).forEach(k=>{if(f.elements[k])f.elements[k].value=r[k]||""});}else f.elements.tanggal.value=new Date().toISOString().slice(0,10);document.getElementById("modal").classList.add("show");}
+function closeForm(){document.getElementById("modal").classList.remove("show");}
+async function saveVisit(e){e.preventDefault();const f=e.target,r={};["tanggal","nama","alamat","telepon","pekerjaan","pembayaran","sumber","status","deskripsi","penerima"].forEach(k=>r[k]=f.elements[k].value.trim());let result;if(editId===null){const {data:user}=await sb.auth.getUser();result=await sb.from("kunjungan_konsumen").insert({...r,created_by:user.user?.id||null}).select().single();}else result=await sb.from("kunjungan_konsumen").update(r).eq("id",editId).select().single();if(result.error){alert("Gagal menyimpan: "+result.error.message);return;}closeForm();await loadOnlineData();renderDashboard();renderList();}
+async function deleteVisit(id){const r=state.records.find(x=>x._id===id);if(confirm("Hapus data kunjungan "+(r?.nama||"ini")+"?")){const {error}=await sb.from("kunjungan_konsumen").delete().eq("id",id);if(error)alert("Gagal menghapus: "+error.message);else{await loadOnlineData();renderDashboard();renderList();}}}
+function renderDashboard(){
+ const from=document.getElementById("dashFrom").value,to=document.getElementById("dashTo").value,data=state.records.filter(r=>(!from||r.tanggal>=from)&&(!to||r.tanggal<=to));
+ document.getElementById("periodText").textContent=(from?fmtDate(from):"Awal")+" — "+(to?fmtDate(to):"Akhir")+" • "+data.length+" kunjungan";
+ const closing=data.filter(r=>r.status==="Closing/Booking").length,ready=data.filter(r=>r.status==="Siap Booking/Minta Simulasi KPR").length,interest=data.filter(r=>r.status==="Tertarik tapi masih membandingkan").length,karyawan=data.filter(r=>r.pekerjaan==="Karyawan").length,wirausaha=data.filter(r=>r.pekerjaan==="Wirausaha").length;
+ const top=counts(data,"sumber")[0];
+ document.getElementById("metrics").innerHTML='<div class="card total-box"><div class="total-main"><div class="label">Total Kunjungan</div><div class="value">'+data.length+'</div></div><div class="total-side"><div class="total-side-item"><div class="label">Karyawan</div><div class="value">'+karyawan+'</div></div><div class="total-side-item"><div class="label">Wirausaha</div><div class="value">'+wirausaha+'</div></div></div></div>'+
+ '<div class="card metric status-box"><div class="label">Closing / Booking</div><div class="value">'+closing+'</div><div class="sub">Konversi '+(data.length?(closing/data.length*100).toFixed(1):0)+'%</div></div>'+
+ '<div class="card metric status-box"><div class="label">Siap Booking</div><div class="value">'+ready+'</div><div class="sub">Minta simulasi KPR</div></div>'+
+ '<div class="card metric status-box"><div class="label">Membandingkan</div><div class="value">'+interest+'</div><div class="sub">Prospek aktif</div></div>'+
+ '<div class="card metric status-box"><div class="label">Sumber Info</div><div class="value">'+(top?.[1]||0)+'</div><div class="sub">'+esc(top?.[0]||"Belum ada data")+'</div></div>';
+ renderBars("sourceBars",data,"sumber");renderDonut("payDonut",data,"pembayaran");renderDonut("statusDonut",data,"status");
+ const recent=[...data].sort((a,b)=>b.tanggal.localeCompare(a.tanggal)).slice(0,8);
+ document.getElementById("recentBody").innerHTML=recent.length?recent.map(r=>'<tr><td class="nowrap">'+fmtDate(r.tanggal)+'</td><td><b>'+esc(r.nama)+'</b></td><td>'+phoneDisplay(r.telepon)+'</td><td>'+esc(r.sumber||"-")+'</td><td><span class="status '+statusClass(r.status)+'">'+esc(r.status||"-")+'</span></td><td>'+esc(r.penerima||"-")+'</td></tr>').join(""):'<tr><td colspan="6" class="empty">Belum ada data.</td></tr>';
+}
+function counts(data,key){const m={};data.forEach(r=>{const v=r[key]||"Tidak diisi";m[v]=(m[v]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+function renderBars(id,data,key){const arr=counts(data,key).slice(0,7),max=Math.max(1,...arr.map(x=>x[1]));document.getElementById(id).innerHTML=arr.length?arr.map(([k,v])=>'<div class="bar-item"><div class="bar" style="height:'+Math.max(3,v/max*82)+'%" title="'+esc(k)+': '+v+'"></div><div class="bar-label" title="'+esc(k)+'">'+esc(k)+'</div></div>').join(""):'<div class="empty">Tidak ada data</div>';}
+function renderDonut(id,data,key){const arr=counts(data,key),total=arr.reduce((a,x)=>a+x[1],0)||1,colors=["#176b5d","#65a99e","#9ccbc1","#c8dfda","#e4efed","#8b9a97"];let cursor=0,parts=[];arr.forEach((x,i)=>{const pct=x[1]/total*100;parts.push(colors[i%colors.length]+" "+cursor+"% "+(cursor+pct)+"%");cursor+=pct});document.getElementById(id).innerHTML=arr.length?'<div class="donut" style="background:conic-gradient('+parts.join(",")+')"></div><div class="legend">'+arr.slice(0,6).map((x,i)=>'<span><i class="dot" style="background:'+colors[i%colors.length]+'"></i>'+esc(x[0])+' <b>'+x[1]+'</b></span>').join("")+'</div>':'<div class="empty">Tidak ada data</div>';}
+function getFiltered(){const q=document.getElementById("search").value.toLowerCase().trim(),from=document.getElementById("listFrom").value,to=document.getElementById("listTo").value,st=document.getElementById("filterStatus").value,so=document.getElementById("filterSource").value,re=document.getElementById("filterReceiver").value;return state.records.map((r,i)=>({r,i})).filter(({r})=>{const hay=Object.values(r).join(" ").toLowerCase();return(!q||hay.includes(q))&&(!from||r.tanggal>=from)&&(!to||r.tanggal<=to)&&(!st||r.status===st)&&(!so||r.sumber===so)&&(!re||r.penerima===re);}).sort((a,b)=>b.r.tanggal.localeCompare(a.r.tanggal));}
+function renderList(){populateFilters();const rows=getFiltered();document.getElementById("countText").textContent=rows.length+" data tampil • total tersimpan "+state.records.length;document.getElementById("dataBody").innerHTML=rows.length?rows.map(({r})=>'<tr><td class="nowrap">'+fmtDate(r.tanggal)+'</td><td><b>'+esc(r.nama)+'</b></td><td>'+esc(r.alamat||"-")+'</td><td class="nowrap">'+(r.telepon?'<a href="https://wa.me/'+waPhone(r.telepon)+'" target="_blank" rel="noopener">'+phoneDisplay(r.telepon)+'</a>':"-")+'</td><td>'+esc(r.pekerjaan||"-")+'</td><td>'+esc(r.pembayaran||"-")+'</td><td>'+esc(r.sumber||"-")+'</td><td><span class="status '+statusClass(r.status)+'">'+esc(r.status||"-")+'</span></td><td>'+esc(r.deskripsi||"-")+'</td><td>'+esc(r.penerima||"-")+'</td><td><div class="actions"><button class="iconbtn" onclick="openForm('+"'"+r._id+"'"+')">Edit</button><button class="iconbtn" onclick="deleteVisit('+"'"+r._id+"'"+')">Hapus</button></div></td></tr>').join(""):'<tr><td colspan="11" class="empty">Tidak ada data yang sesuai filter.</td></tr>';}
+function resetFilters(){["search","listFrom","listTo"].forEach(id=>document.getElementById(id).value="");["filterStatus","filterSource","filterReceiver"].forEach(id=>document.getElementById(id).value="");renderList();}
+["search","listFrom","listTo","filterStatus","filterSource","filterReceiver"].forEach(id=>document.getElementById(id).addEventListener("input",renderList));
+function setAllPeriod(){const dates=state.records.map(r=>r.tanggal).filter(Boolean).sort();document.getElementById("dashFrom").value=dates[0]||"";document.getElementById("dashTo").value=dates[dates.length-1]||"";renderDashboard();}
+function exportCSV(){const rows=getFiltered().map(x=>x.r),headers=["Tanggal","Nama Prospek","Alamat","Telepon","Pekerjaan","Metode Bayar","Sumber Info","Status","Description","Penerima"],cell=v=>'"'+String(v??"").replace(/"/g,'""')+'"',csv="\\ufeff"+[headers,...rows.map(r=>[r.tanggal,r.nama,r.alamat,r.telepon,r.pekerjaan,r.pembayaran,r.sumber,r.status,r.deskripsi,r.penerima])].map(a=>a.map(cell).join(",")).join("\\r\\n");download("KunjunganKonsumen.csv",csv,"text/csv;charset=utf-8");}
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+async function backupJSON(){download("MelatiMas_Kunjungan_Backup.json",JSON.stringify(state,null,2),"application/json");}
+function renderSettings(){document.getElementById("settingGrid").innerHTML=Object.keys({pembayaran:"Metode Bayar",sumber:"Sumber Info",status:"Status",penerima:"Yang Menerima",pekerjaan:"Pekerjaan"}).map(k=>'<div class="setting-box"><h3>'+{pembayaran:"Metode Bayar",sumber:"Sumber Info",status:"Status",penerima:"Yang Menerima",pekerjaan:"Pekerjaan"}[k]+'</h3><div><div class="pill">'+values(k).map(esc).join('</div><div class="pill">')+'</div></div>').join("");}
+document.getElementById("dashFrom").value=INITIAL.period.from;document.getElementById("dashTo").value=INITIAL.period.to;
+initApp();</script>
+</body>
+</html>
