@@ -1,0 +1,39 @@
+name: Update sidebar logo
+on:
+  push:
+    paths-ignore:
+      - '.github/workflows/*'
+permissions:
+  contents: write
+jobs:
+  update-sidebar-logo:
+    if: ${{ !contains(github.event.head_commit.message, 'Update sidebar logo') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace sidebar logo
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old='.logo{width:42px;height:42px;border-radius:12px;background:#dcefe9;color:#14584d;display:grid;place-items:center;font-weight:800}'
+          new=old+'.brand-logo{width:52px;height:52px;border-radius:14px;object-fit:cover;flex:0 0 auto}'
+          if '.brand-logo{' not in s:
+              s=s.replace(old,new,1)
+          target='<div class="brand"><div class="logo">MM</div><div>'
+          replacement='<div class="brand"><img class="brand-logo" src="./icon-192.svg" alt="Melati Mas Residence"><div>'
+          if target in s:
+              s=s.replace(target,replacement,1)
+          else:
+              raise SystemExit('Sidebar logo target not found')
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Update sidebar logo'
+          git push
