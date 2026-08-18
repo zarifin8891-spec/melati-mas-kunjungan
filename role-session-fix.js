@@ -1,6 +1,15 @@
 (() => {
   const ROLE_LABEL = { admin: 'Administrator', marketing: 'Marketing' };
 
+  function ensureMasterScript() {
+    if (document.getElementById('master-data-admin-script')) return;
+    const s = document.createElement('script');
+    s.id = 'master-data-admin-script';
+    s.src = './master-data-admin.js?v=26';
+    s.defer = true;
+    document.head.appendChild(s);
+  }
+
   function applyProfile(profile, user) {
     const role = profile?.role === 'admin' ? 'admin' : 'marketing';
     const label = ROLE_LABEL[role];
@@ -34,15 +43,16 @@
     if (role !== 'admin') {
       if (managedPanel) managedPanel.remove();
       if (managedModal) managedModal.remove();
+      document.getElementById('masterDataPanel')?.remove();
+      document.getElementById('masterDataModal')?.remove();
       const settingsPage = document.getElementById('page-settings');
       if (settingsPage?.classList.contains('active') && typeof window.go === 'function') window.go('dashboard');
+    } else {
+      ensureMasterScript();
     }
 
     sessionStorage.setItem('melati-last-role', role);
 
-    // When switching between users with different roles in the same SPA session,
-    // rebuild the application once so all role-scoped UI (especially User Management)
-    // is created from a clean DOM state.
     if (previousRole && previousRole !== role) {
       const marker = sessionStorage.getItem('melati-role-reload-done');
       if (marker !== role) {
