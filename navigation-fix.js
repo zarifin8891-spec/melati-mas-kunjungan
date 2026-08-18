@@ -27,18 +27,52 @@
     }
   }
 
+  async function safeLogout() {
+    try {
+      const result = await sb.auth.signOut({ scope: 'local' });
+      if (result?.error) throw result.error;
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      const authScreen = document.getElementById('authScreen');
+      const appShell = document.getElementById('appShell');
+      if (appShell) appShell.style.display = 'none';
+      if (authScreen) authScreen.style.display = 'flex';
+      const email = document.getElementById('authEmail');
+      const password = document.getElementById('authPassword');
+      if (email) email.value = '';
+      if (password) password.value = '';
+      const msg = document.getElementById('authMsg');
+      if (msg) {
+        msg.style.display = 'none';
+        msg.textContent = '';
+      }
+      if (typeof window.toggleMobileMenu === 'function') window.toggleMobileMenu(false);
+    }
+  }
+
   window.go = safeGo;
+  window.logout = safeLogout;
 
   function bind() {
     if (document.documentElement.dataset.navigationFix === 'true') return;
     document.documentElement.dataset.navigationFix = 'true';
 
     document.addEventListener('click', event => {
-      const button = event.target.closest('.nav button[data-page]');
-      if (!button) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      safeGo(button.dataset.page);
+      const navButton = event.target.closest('.nav button[data-page]');
+      if (navButton) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        safeGo(navButton.dataset.page);
+        return;
+      }
+
+      const logoutButton = event.target.closest('button[onclick="logout()"]');
+      if (logoutButton) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        safeLogout();
+      }
     }, true);
   }
 
