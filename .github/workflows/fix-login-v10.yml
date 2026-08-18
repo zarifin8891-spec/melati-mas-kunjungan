@@ -1,0 +1,38 @@
+name: Fix login v10
+on:
+  push:
+    paths:
+      - _fix_login_v10.txt
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch login loader and cache
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          tag = '<script src="./auth-enhancements.js" defer></script><script src="./role-enhancements.js" defer></script><script src="./login-stability.js" defer></script>'
+          old = '<script src="./auth-enhancements.js" defer></script><script src="./role-enhancements.js" defer></script>'
+          if 'src="./login-stability.js"' not in s:
+              s = s.replace(old, tag, 1)
+          p.write_text(s, encoding='utf-8')
+
+          sw = Path('sw.js')
+          s = sw.read_text(encoding='utf-8')
+          s = s.replace("const CACHE_NAME = 'melati-mas-kunjungan-v8';", "const CACHE_NAME = 'melati-mas-kunjungan-v10';", 1)
+          s = s.replace("'./auth-enhancements.js', './role-enhancements.js'", "'./auth-enhancements.js', './role-enhancements.js', './login-stability.js'", 1)
+          sw.write_text(s, encoding='utf-8')
+
+          marker = Path('_fix_login_v10.txt')
+          marker.unlink(missing_ok=True)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html sw.js _fix_login_v10.txt
+          git commit -m "Fix login transition and load stability script"
+          git push
