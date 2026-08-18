@@ -1,9 +1,9 @@
-const CACHE_NAME = 'melati-mas-kunjungan-v11';
+const CACHE_NAME = 'melati-mas-kunjungan-v12';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg', './auth-enhancements.js', './role-enhancements.js', './login-stability.js', './navigation-fix.js', './role-session-fix.js'];
-const ENHANCEMENT = '<script src="./auth-enhancements.js" defer></script><script src="./role-enhancements.js" defer></script><script src="./login-stability.js" defer></script><script src="./navigation-fix.js" defer></script>';
+const ENHANCEMENT = '<script src="./auth-enhancements.js" defer></script><script src="./role-enhancements.js" defer></script><script src="./login-stability.js" defer></script><script src="./navigation-fix.js" defer></script><script src="./role-session-fix.js" defer></script>';
 
 function enhanceHtml(html) {
-  if (html.includes('navigation-fix.js')) return html;
+  if (html.includes('role-session-fix.js')) return html;
   return html.replace('</head>', ENHANCEMENT + '</head>');
 }
 
