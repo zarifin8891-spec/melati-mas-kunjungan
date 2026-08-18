@@ -8,32 +8,57 @@
     const settingsPage = document.getElementById('page-settings');
     if (!settingsPage) return;
     if (document.getElementById('managedUsersPanel')) return;
-    if (typeof window.__ensureUserManagement === 'function') {
-      try { window.__ensureUserManagement(); } catch (e) { console.error('User management revive error:', e); }
+    const loader = window.__ensureUserManagement;
+    if (typeof loader === 'function') {
+      try { loader(); } catch (e) { console.error('User management revive error:', e); }
     }
   }
 
-  function scheduleEnsure() {
-    let attempts = 0;
+  function scheduleEnsure(durationMs = 30000) {
+    const started = Date.now();
     const timer = setInterval(() => {
-      attempts += 1;
       ensure();
-      if (document.getElementById('managedUsersPanel') || attempts >= 30) clearInterval(timer);
-    }, 500);
+      if (document.getElementById('managedUsersPanel') || Date.now() - started >= durationMs) {
+        clearInterval(timer);
+      }
+    }, 250);
+    ensure();
   }
 
   function bind() {
+    if (document.documentElement.dataset.userManagementReviveBound === 'true') return;
+    document.documentElement.dataset.userManagementReviveBound = 'true';
+
     document.addEventListener('click', (event) => {
       const button = event.target.closest('.nav button[data-page="settings"]');
       if (!button) return;
-      setTimeout(scheduleEnsure, 0);
-      setTimeout(ensure, 800);
+      scheduleEnsure(10000);
     }, true);
-    window.addEventListener('focus', scheduleEnsure);
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) scheduleEnsure();
+
+    // Role is assigned asynchronously after login. Observe the actual role
+    // attribute so Admin gets User Management immediately without needing
+    // to change browser tabs or refocus the window.
+    const roleObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-user-role') {
+          scheduleEnsure(15000);
+          break;
+        }
+      }
     });
-    scheduleEnsure();
+    roleObserver.observe(document.body, { attributes: true, attributeFilter: ['data-user-role'] });
+
+    const pageObserver = new MutationObserver(() => {
+      if (isAdmin()) ensure();
+    });
+    pageObserver.observe(document.body, { childList: true, subtree: true });
+
+    window.addEventListener('focus', () => scheduleEnsure(10000));
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) scheduleEnsure(10000);
+    });
+
+    scheduleEnsure(30000);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
