@@ -1,4 +1,4 @@
-const CACHE_NAME = 'melati-mas-kunjungan-v7';
+const CACHE_NAME = 'melati-mas-kunjungan-v8';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg', './auth-enhancements.js', './role-enhancements.js'];
 const ENHANCEMENT = '<script src="./auth-enhancements.js" defer></script><script src="./role-enhancements.js" defer></script>';
 
