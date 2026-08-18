@@ -26,8 +26,6 @@
     if(error) throw error; return data || [];
   }
 
-  function getNextSort(rows){ return rows.reduce((m,r)=>Math.max(m,Number(r.sort_order)||0),-1)+1; }
-
   async function ensurePanel(){
     if(!isAdmin()) return;
     const settings=document.getElementById('page-settings'); if(!settings) return;
@@ -116,4 +114,6 @@
     window.addEventListener('focus',()=>setTimeout(ensurePanel,100));
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+
+  // Force a repository update so the deployment workflow re-injects this module.
 })();
