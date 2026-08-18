@@ -1,9 +1,9 @@
-const CACHE_NAME = 'melati-mas-kunjungan-v5';
-const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg', './auth-enhancements.js'];
-const ENHANCEMENT = '<script src="./auth-enhancements.js" defer></script>';
+const CACHE_NAME = 'melati-mas-kunjungan-v6';
+const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg', './auth-enhancements.js', './role-enhancements.js'];
+const ENHANCEMENT = '<script src="./auth-enhancements.js" defer></script><script src="./role-enhancements.js" defer></script>';
 
 function enhanceHtml(html) {
-  if (html.includes('auth-enhancements.js')) return html;
+  if (html.includes('role-enhancements.js')) return html;
   return html.replace('</head>', ENHANCEMENT + '</head>');
 }
 
