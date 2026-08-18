@@ -4,6 +4,8 @@
   function applyProfile(profile, user) {
     const role = profile?.role === 'admin' ? 'admin' : 'marketing';
     const label = ROLE_LABEL[role];
+    const previousRole = sessionStorage.getItem('melati-last-role');
+
     document.body.dataset.userRole = role;
     document.body.dataset.userName = profile?.full_name || '';
 
@@ -34,8 +36,21 @@
       if (managedModal) managedModal.remove();
       const settingsPage = document.getElementById('page-settings');
       if (settingsPage?.classList.contains('active') && typeof window.go === 'function') window.go('dashboard');
-    } else if (typeof window.__ensureUserManagement === 'function') {
-      window.__ensureUserManagement();
+    }
+
+    sessionStorage.setItem('melati-last-role', role);
+
+    // When switching between users with different roles in the same SPA session,
+    // rebuild the application once so all role-scoped UI (especially User Management)
+    // is created from a clean DOM state.
+    if (previousRole && previousRole !== role) {
+      const marker = sessionStorage.getItem('melati-role-reload-done');
+      if (marker !== role) {
+        sessionStorage.setItem('melati-role-reload-done', role);
+        window.location.reload();
+      }
+    } else if (!previousRole) {
+      sessionStorage.setItem('melati-role-reload-done', role);
     }
   }
 
@@ -63,6 +78,8 @@
     if (settingBtn) settingBtn.style.display = '';
     document.body.dataset.userRole = '';
     document.body.dataset.userName = '';
+    sessionStorage.removeItem('melati-last-role');
+    sessionStorage.removeItem('melati-role-reload-done');
   }
 
   async function init() {
