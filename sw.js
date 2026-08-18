@@ -1,9 +1,9 @@
-const CACHE_NAME = 'melati-mas-kunjungan-v15';
-const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg', './auth-enhancements.js', './role-enhancements.js', './login-stability.js', './navigation-fix.js', './role-session-fix.js', './user-management-revive.js', './session-clean-logout.js'];
-const ENHANCEMENT = '<script src="./auth-enhancements.js" defer></script><script src="./role-enhancements.js" defer></script><script src="./login-stability.js" defer></script><script src="./navigation-fix.js" defer></script><script src="./role-session-fix.js" defer></script><script src="./user-management-revive.js" defer></script><script src="./session-clean-logout.js" defer></script>';
+const CACHE_NAME = 'melati-mas-kunjungan-v17';
+const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg', './auth-enhancements.js', './role-enhancements.js', './login-stability.js', './navigation-fix.js', './role-session-fix.js', './user-management-revive.js', './session-clean-logout.js', './master-data-admin.js'];
+const ENHANCEMENT = '<script src="./auth-enhancements.js" defer></script><script src="./role-enhancements.js" defer></script><script src="./login-stability.js" defer></script><script src="./navigation-fix.js" defer></script><script src="./role-session-fix.js" defer></script><script src="./user-management-revive.js" defer></script><script src="./session-clean-logout.js" defer></script><script src="./master-data-admin.js" defer></script>';
 
 function enhanceHtml(html) {
-  if (html.includes('role-session-fix.js')) return html;
+  if (html.includes('master-data-admin.js')) return html;
   return html.replace('</head>', ENHANCEMENT + '</head>');
 }
 
