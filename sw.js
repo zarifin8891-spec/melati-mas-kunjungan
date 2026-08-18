@@ -1,4 +1,4 @@
-const CACHE_NAME = 'melati-mas-kunjungan-v18';
+const CACHE_NAME = 'melati-mas-kunjungan-v16';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg', './auth-enhancements.js', './role-enhancements.js', './login-stability.js', './navigation-fix.js', './role-session-fix.js', './user-management-revive.js', './session-clean-logout.js', './master-data-admin.js', './inactive-account-guard.js'];
 const SCRIPTS = ['auth-enhancements.js','role-enhancements.js','login-stability.js','navigation-fix.js','role-session-fix.js','user-management-revive.js','session-clean-logout.js','master-data-admin.js','inactive-account-guard.js'];
 const ENHANCEMENT = SCRIPTS.map(name => `<script src="./${name}" defer></script>`).join('');
