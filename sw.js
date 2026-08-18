@@ -1,9 +1,9 @@
 const CACHE_NAME = 'melati-mas-kunjungan-v9';
-const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg', './auth-enhancements.js', './role-enhancements.js'];
-const ENHANCEMENT = '<script src="./auth-enhancements.js" defer></script><script src="./role-enhancements.js" defer></script>';
+const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.svg', './icon-512.svg', './auth-enhancements.js', './role-enhancements.js', './login-stability.js'];
+const ENHANCEMENT = '<script src="./auth-enhancements.js" defer></script><script src="./role-enhancements.js" defer></script><script src="./login-stability.js" defer></script>';
 
 function enhanceHtml(html) {
-  if (html.includes('role-enhancements.js')) return html;
+  if (html.includes('login-stability.js')) return html;
   return html.replace('</head>', ENHANCEMENT + '</head>');
 }
 
@@ -23,6 +23,11 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
 
+  if (request.url.endsWith('/sw.js')) {
+    event.respondWith(fetch(request, {cache: 'no-store'}));
+    return;
+  }
+
   if (request.mode === 'navigate' || request.url.endsWith('/index.html')) {
     event.respondWith(
       fetch(request).then(async response => {
@@ -40,11 +45,6 @@ self.addEventListener('fetch', event => {
         return out;
       }).catch(() => caches.match(request).then(cached => cached || caches.match('./index.html')))
     );
-    return;
-  }
-
-  if (request.url.endsWith('/sw.js')) {
-    event.respondWith(fetch(request, {cache: 'no-store'}));
     return;
   }
 
