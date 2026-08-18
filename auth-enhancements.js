@@ -6,17 +6,11 @@
     const raw = String(errorText || '');
     const low = raw.toLowerCase();
     if (low.includes('email rate limit exceeded') || low.includes('over_email_send_rate_limit')) {
-      return 'Pengiriman email autentikasi sedang mencapai batas. Jangan klik Daftar berulang. Jika akun sudah terdaftar, gunakan Masuk. Coba lagi setelah batas email pulih.';
+      return 'Batas email autentikasi Supabase sedang tercapai. Password reset belum dapat mengirim email. Tunggu sampai batas pulih atau gunakan custom SMTP untuk penggunaan produksi.';
     }
-    if (low.includes('too many requests') || low.includes('over_request_rate_limit') || low.includes('429')) {
-      return 'Terlalu banyak permintaan ke layanan login. Tunggu beberapa menit lalu coba lagi.';
-    }
-    if (low.includes('invalid login credentials')) {
-      return 'Email atau password salah.';
-    }
-    if (low.includes('email not confirmed')) {
-      return 'Email akun belum dikonfirmasi. Silakan konfirmasi email terlebih dahulu.';
-    }
+    if (low.includes('too many requests') || low.includes('over_request_rate_limit') || low.includes('429')) return 'Terlalu banyak permintaan ke layanan login. Tunggu beberapa menit lalu coba lagi.';
+    if (low.includes('invalid login credentials')) return 'Email atau password salah.';
+    if (low.includes('email not confirmed')) return 'Email akun belum dikonfirmasi. Silakan konfirmasi email terlebih dahulu.';
     return raw || 'Terjadi kesalahan saat autentikasi.';
   }
 
@@ -24,7 +18,7 @@
     if (document.getElementById('auth-enhancement-style')) return;
     const style = document.createElement('style');
     style.id = 'auth-enhancement-style';
-    style.textContent = '.password-wrap{position:relative}.password-wrap input{width:100%;padding-right:48px}.password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;background:transparent;color:#667085;border-radius:8px;display:grid;place-items:center;padding:0;cursor:pointer}.password-toggle:hover{background:#f2f4f7;color:#344054}.password-toggle:focus-visible{outline:2px solid #6eafa4;outline-offset:2px}.password-toggle svg{width:20px;height:20px;pointer-events:none}.auth-link-row{display:flex;justify-content:center;margin-top:12px}.auth-link{border:0;background:transparent;color:#176b5d;font-size:12px;font-weight:700;padding:6px 8px;cursor:pointer}.auth-link:hover{text-decoration:underline}.auth-link:disabled{opacity:.6;cursor:default;text-decoration:none}.reset-panel{margin-top:14px;padding:14px;border:1px solid #e6eaf0;border-radius:12px;background:#f8fafc}.reset-panel h3{margin:0 0 8px;font-size:14px}.reset-panel p{margin:0 0 10px;font-size:11px;color:#667085}.reset-panel .reset-field{display:grid;gap:6px;margin-top:10px}.reset-panel label{font-size:11px;color:#667085;font-weight:700}.reset-panel input{border:1px solid #d6dbe4;border-radius:9px;padding:9px 10px;background:#fff;outline:none}.reset-panel .reset-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.reset-panel .reset-actions button{border:0;border-radius:9px;padding:8px 12px;font-weight:700;cursor:pointer}.reset-cancel{background:#eef2f6;color:#344054}.reset-submit{background:#176b5d;color:#fff}.reset-submit:disabled{opacity:.65;cursor:default}' ;
+    style.textContent = '.password-wrap{position:relative}.password-wrap input{width:100%;padding-right:48px}.password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;background:transparent;color:#667085;border-radius:8px;display:grid;place-items:center;padding:0;cursor:pointer}.password-toggle:hover{background:#f2f4f7;color:#344054}.password-toggle:focus-visible{outline:2px solid #6eafa4;outline-offset:2px}.password-toggle svg{width:20px;height:20px;pointer-events:none}.auth-link-row{display:flex;justify-content:center;margin-top:12px}.auth-link{border:0;background:transparent;color:#176b5d;font-size:12px;font-weight:700;padding:6px 8px;cursor:pointer}.auth-link:hover{text-decoration:underline}.auth-link:disabled{opacity:.6;cursor:default;text-decoration:none}.reset-panel{margin-top:14px;padding:14px;border:1px solid #e6eaf0;border-radius:12px;background:#f8fafc}.reset-panel h3{margin:0 0 8px;font-size:14px}.reset-panel p{margin:0 0 10px;font-size:11px;color:#667085}.reset-panel .reset-field{display:grid;gap:6px;margin-top:10px}.reset-panel label{font-size:11px;color:#667085;font-weight:700}.reset-panel input{border:1px solid #d6dbe4;border-radius:9px;padding:9px 10px;background:#fff;outline:none}.reset-panel .reset-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.reset-panel .reset-actions button{border:0;border-radius:9px;padding:8px 12px;font-weight:700;cursor:pointer}.reset-cancel{background:#eef2f6;color:#344054}.reset-submit{background:#176b5d;color:#fff}.reset-submit:disabled{opacity:.65;cursor:default}.auth-link.waiting{color:#667085}
     document.head.appendChild(style);
   }
 
@@ -37,7 +31,6 @@
     wrap.className = 'password-wrap';
     field.replaceChild(wrap, input);
     wrap.appendChild(input);
-
     const button = document.createElement('button');
     button.type = 'button';
     button.id = 'togglePassword';
@@ -47,7 +40,6 @@
     button.setAttribute('aria-pressed', 'false');
     button.innerHTML = eyeSvg;
     wrap.appendChild(button);
-
     button.addEventListener('click', () => {
       const show = input.type === 'password';
       input.type = show ? 'text' : 'password';
@@ -67,14 +59,17 @@
 
   async function sendPasswordReset() {
     const email = document.getElementById('authEmail')?.value.trim();
+    const link = document.getElementById('forgotPassword');
     if (!email) {
       window.msg?.('Masukkan email terlebih dahulu, lalu pilih Lupa password.', true);
       document.getElementById('authEmail')?.focus();
       return;
     }
-    const link = document.getElementById('forgotPassword');
+    if (link?.dataset.busy === 'true') return;
     if (link) {
+      link.dataset.busy = 'true';
       link.disabled = true;
+      link.classList.add('waiting');
       link.textContent = 'Mengirim...';
     }
     try {
@@ -82,17 +77,30 @@
       const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
       if (error) {
         window.msg?.(friendlyAuthError(error.message), true);
-      } else {
-        window.msg?.('Jika email terdaftar, link untuk membuat password baru sudah dikirim. Periksa Inbox dan folder Spam.', false);
+        if (link) {
+          link.dataset.busy = 'false';
+          link.disabled = false;
+          link.classList.remove('waiting');
+          link.textContent = 'Lupa password?';
+        }
+        return;
       }
+      window.msg?.('Jika email terdaftar, link untuk membuat password baru sudah dikirim. Periksa Inbox dan folder Spam.', false);
+      if (link) link.textContent = 'Coba lagi 60 dtk';
+      setTimeout(() => {
+        if (!link) return;
+        link.dataset.busy = 'false';
+        link.disabled = false;
+        link.classList.remove('waiting');
+        link.textContent = 'Lupa password?';
+      }, 60000);
     } catch (error) {
       window.msg?.(friendlyAuthError(error?.message), true);
-    } finally {
       if (link) {
-        setTimeout(() => {
-          link.disabled = false;
-          link.textContent = 'Lupa password?';
-        }, 30000);
+        link.dataset.busy = 'false';
+        link.disabled = false;
+        link.classList.remove('waiting');
+        link.textContent = 'Lupa password?';
       }
     }
   }
