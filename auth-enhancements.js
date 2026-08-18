@@ -73,8 +73,12 @@
     button.__cooldownInstalled = true;
     let cooling = false;
     let timer = null;
-    button.addEventListener('click', () => {
-      if (cooling) return;
+    button.addEventListener('click', (event) => {
+      if (cooling) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
       cooling = true;
       let left = 60;
       const original = 'Daftar';
