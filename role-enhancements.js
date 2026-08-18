@@ -178,6 +178,7 @@
     renderUsers();
   }
 
+  window.__ensureUserManagement = addUserManagement;
   window.__editManagedUser = editManagedUser;
   window.__toggleManagedUser = toggleManagedUser;
   window.__resetManagedUser = resetManagedUser;
