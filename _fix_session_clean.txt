@@ -1,1 +1,0 @@
-reset session UI and logout state
