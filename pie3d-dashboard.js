@@ -3,9 +3,9 @@
   window.__melatiPie3dReady = true;
 
   const PALETTES = {
-    pembayaran: ['#0F766E', '#F59E0B', '#2563EB', '#9333EA', '#DC2626', '#16A34A'],
-    status: ['#F59E0B', '#2563EB', '#16A34A', '#DC2626', '#7C3AED', '#0F766E'],
-    default: ['#0F766E', '#F59E0B', '#2563EB', '#9333EA', '#DC2626', '#16A34A']
+    pembayaran: ['#2563EB', '#F59E0B', '#16A34A', '#9333EA', '#DC2626', '#0891B2'],
+    status: ['#2563EB', '#F59E0B', '#16A34A', '#DC2626', '#9333EA', '#0891B2'],
+    default: ['#2563EB', '#F59E0B', '#16A34A', '#9333EA', '#DC2626', '#0891B2']
   };
 
   function injectStyles() {
