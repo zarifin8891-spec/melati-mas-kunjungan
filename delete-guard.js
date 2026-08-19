@@ -1,92 +1,72 @@
 (() => {
+  const MESSAGE = 'Data tidak dapat dihapus. Hanya Administrator yang memiliki izin untuk menghapus data kunjungan.';
   const friendly = (error) => {
     const raw = String(error?.message || error || '').trim();
     const low = raw.toLowerCase();
-    if (
-      low.includes('row-level security') ||
-      low.includes('permission denied') ||
-      low.includes('42501') ||
-      low.includes('new row violates row-level security')
-    ) {
-      return 'Data tidak dapat dihapus. Hanya Administrator yang memiliki izin untuk menghapus data kunjungan.';
-    }
+    if (low.includes('row-level security') || low.includes('permission denied') || low.includes('42501') || low.includes('new row violates row-level security')) return MESSAGE;
     return raw || 'Data tidak dapat dihapus. Silakan coba lagi.';
   };
 
-  async function isAdmin() {
-    const { data: sessionData, error: sessionError } = await sb.auth.getSession();
-    if (sessionError) throw sessionError;
-    const user = sessionData?.session?.user;
+  async function getAccess() {
+    const { data, error } = await sb.auth.getSession();
+    if (error) throw error;
+    const user = data?.session?.user;
     if (!user) return { loggedIn: false, admin: false };
-
     const { data: profile, error: profileError } = await sb
       .from('profiles')
       .select('role, active')
       .eq('id', user.id)
       .maybeSingle();
-
     if (profileError) throw profileError;
-    return {
-      loggedIn: true,
-      admin: profile?.role === 'admin' && profile?.active === true
-    };
+    return { loggedIn: true, admin: profile?.role === 'admin' && profile?.active === true };
+  }
+
+  async function handleDeleteClick(event) {
+    const button = event.target.closest('button.iconbtn');
+    if (!button) return;
+    const text = (button.textContent || '').trim().toLowerCase();
+    if (text !== 'hapus') return;
+
+    // Capture phase stops the original inline onclick before it can run.
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    try {
+      const access = await getAccess();
+      if (!access.loggedIn) {
+        alert('Sesi login tidak ditemukan. Silakan login kembali.');
+        return;
+      }
+      if (!access.admin) {
+        alert(MESSAGE);
+        return;
+      }
+
+      const onclick = button.getAttribute('onclick') || '';
+      const match = onclick.match(/deleteVisit\(['"]([^'"]+)['"]\)/);
+      const id = match?.[1];
+      if (!id) {
+        alert('ID data kunjungan tidak ditemukan.');
+        return;
+      }
+
+      // Administrator: hand control back to the application's existing delete flow.
+      if (typeof window.deleteVisit === 'function') {
+        await window.deleteVisit(id);
+      }
+    } catch (error) {
+      console.error('Delete guard error:', error);
+      alert(friendly(error));
+    }
   }
 
   function install() {
     if (typeof sb === 'undefined') return;
-    if (typeof window.deleteVisit !== 'function' || window.deleteVisit.__deleteGuard) return;
-
-    const guardedDelete = async function(id) {
-      const records = Array.isArray(window.state?.records) ? window.state.records : [];
-      const record = records.find(r => r?._id === id);
-      const name = record?.nama || 'ini';
-      if (!confirm('Hapus data kunjungan ' + name + '?')) return;
-
-      try {
-        const access = await isAdmin();
-        if (!access.loggedIn) {
-          alert('Sesi login tidak ditemukan. Silakan login kembali.');
-          return;
-        }
-        if (!access.admin) {
-          alert('Data tidak dapat dihapus. Hanya Administrator yang memiliki izin untuk menghapus data kunjungan.');
-          return;
-        }
-
-        const { data: deletedRows, error } = await sb
-          .from('kunjungan_konsumen')
-          .delete()
-          .eq('id', id)
-          .select('id');
-
-        if (error) {
-          console.error('Delete visit rejected:', error);
-          alert(friendly(error));
-          return;
-        }
-
-        if (!Array.isArray(deletedRows) || deletedRows.length === 0) {
-          alert('Data tidak dapat dihapus. Hanya Administrator yang memiliki izin untuk menghapus data kunjungan.');
-          return;
-        }
-
-        if (typeof window.loadOnlineData === 'function') await window.loadOnlineData();
-        if (typeof window.renderDashboard === 'function') window.renderDashboard();
-        if (typeof window.renderList === 'function') window.renderList();
-        alert('Data kunjungan berhasil dihapus.');
-      } catch (error) {
-        console.error('Delete visit error:', error);
-        alert(friendly(error));
-      }
-    };
-
-    guardedDelete.__deleteGuard = true;
-    window.deleteVisit = guardedDelete;
+    if (document.documentElement.dataset.deleteGuardCapture === 'true') return;
+    document.documentElement.dataset.deleteGuardCapture = 'true';
+    document.addEventListener('click', handleDeleteClick, true);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
-  setTimeout(install, 300);
-  setTimeout(install, 1000);
-  setInterval(install, 3000);
 })();
