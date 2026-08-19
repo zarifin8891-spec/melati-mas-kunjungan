@@ -2,7 +2,11 @@
   if (window.__melatiPie3dReady) return;
   window.__melatiPie3dReady = true;
 
-  const COLORS = ['#176b5d', '#65a99e', '#9ccbc1', '#c8dfda', '#e4efed', '#8b9a97'];
+  const PALETTES = {
+    pembayaran: ['#0F766E', '#F59E0B', '#2563EB', '#9333EA', '#DC2626', '#16A34A'],
+    status: ['#F59E0B', '#2563EB', '#16A34A', '#DC2626', '#7C3AED', '#0F766E'],
+    default: ['#0F766E', '#F59E0B', '#2563EB', '#9333EA', '#DC2626', '#16A34A']
+  };
 
   function injectStyles() {
     if (document.getElementById('pie3d-dashboard-css')) return;
@@ -13,15 +17,15 @@
       .pie3d-stage{width:168px;height:168px;display:grid;place-items:center;perspective:650px;flex:0 0 auto}
       .pie3d{position:relative;width:150px;height:150px;transform-style:preserve-3d;transform:perspective(650px) rotateX(58deg) rotateZ(-8deg);border-radius:50%}
       .pie3d-depth,.pie3d-top{position:absolute;inset:0;border-radius:50%;background:var(--pie-bg);}
-      .pie3d-depth{transform:translateY(11px);filter:brightness(.72);}
-      .pie3d-top{box-shadow:0 9px 18px rgba(16,24,40,.16);}
-      .pie3d-highlight{position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.25),transparent 34%);pointer-events:none}
+      .pie3d-depth{transform:translateY(11px);filter:brightness(.72)}
+      .pie3d-top{box-shadow:0 9px 18px rgba(16,24,40,.16)}
+      .pie3d-highlight{position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.24),transparent 34%);pointer-events:none}
       .pie3d-total{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotateZ(8deg) rotateX(-58deg);text-align:center;z-index:3;pointer-events:none;white-space:nowrap}
       .pie3d-total b{display:block;font-size:21px;line-height:1.05;color:#172033}
       .pie3d-total span{display:block;font-size:9px;color:#667085;margin-top:3px;text-transform:uppercase;letter-spacing:.08em}
       .pie3d-legend{display:grid;gap:7px;font-size:11px;min-width:150px;max-width:230px}
-      .pie3d-legend-row{display:grid;grid-template-columns:9px minmax(0,1fr) auto;gap:7px;align-items:start}
-      .pie3d-dot{width:9px;height:9px;border-radius:50%;margin-top:3px}
+      .pie3d-legend-row{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:7px;align-items:start}
+      .pie3d-dot{width:10px;height:10px;border-radius:50%;margin-top:3px;box-shadow:0 0 0 1px rgba(16,24,40,.08)}
       .pie3d-name{line-height:1.25;color:#344054}
       .pie3d-value{white-space:nowrap;font-weight:800;color:#172033}
       .bar-value{align-self:end;text-align:center;font-size:10px;font-weight:800;color:#172033;min-height:13px}
@@ -46,6 +50,10 @@
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }
 
+  function paletteFor(key) {
+    return PALETTES[key] || PALETTES.default;
+  }
+
   function renderPie3D(id, data, key) {
     const host = document.getElementById(id);
     if (!host) return;
@@ -58,17 +66,18 @@
       return;
     }
 
+    const colors = paletteFor(key);
     let cursor = 0;
     const parts = rows.map(([, value], index) => {
       const start = cursor;
       cursor += (value / total) * 100;
-      return `${COLORS[index % COLORS.length]} ${start}% ${cursor}%`;
+      return `${colors[index % colors.length]} ${start}% ${cursor}%`;
     });
     const gradient = `conic-gradient(${parts.join(',')})`;
 
     const legendRows = rows.slice(0, 7).map(([name, value], index) => {
       const pct = (value / total * 100).toFixed(1).replace('.', ',');
-      return `<div class="pie3d-legend-row"><i class="pie3d-dot" style="background:${COLORS[index % COLORS.length]}"></i><span class="pie3d-name">${escapeValue(name)}</span><span class="pie3d-value">${value} · ${pct}%</span></div>`;
+      return `<div class="pie3d-legend-row"><i class="pie3d-dot" style="background:${colors[index % colors.length]}"></i><span class="pie3d-name">${escapeValue(name)}</span><span class="pie3d-value">${value} · ${pct}%</span></div>`;
     }).join('');
 
     host.innerHTML = `
