@@ -11,11 +11,24 @@
     }
   }
 
+  function installEditBridge() {
+    if (typeof window.openForm !== 'function' || window.openForm.__saveBridge) return;
+    const originalOpenForm = window.openForm;
+    const wrapped = function(id = null) {
+      window.__visitEditId = id;
+      return originalOpenForm.apply(this, arguments);
+    };
+    wrapped.__saveBridge = true;
+    window.openForm = wrapped;
+    window.__visitEditId = null;
+  }
+
   async function saveVisit(event) {
     event.preventDefault();
     event.stopImmediatePropagation();
     if (busy || typeof sb === 'undefined') return;
 
+    installEditBridge();
     const form = event.target;
     const sessionResult = await sb.auth.getSession();
     const session = sessionResult?.data?.session;
@@ -34,13 +47,15 @@
       return;
     }
 
+    const editId = window.__visitEditId ?? null;
+
     try {
       setBusy(true);
       let result;
-      if (window.editId === null || window.editId === undefined) {
+      if (editId === null) {
         result = await sb.from('kunjungan_konsumen').insert({ ...record, created_by: user.id });
       } else {
-        result = await sb.from('kunjungan_konsumen').update(record).eq('id', window.editId);
+        result = await sb.from('kunjungan_konsumen').update(record).eq('id', editId);
       }
 
       if (result?.error) throw result.error;
@@ -59,6 +74,7 @@
   }
 
   function bind() {
+    installEditBridge();
     const form = document.getElementById('visitForm');
     if (!form || form.dataset.stableSave === 'true') return;
     form.dataset.stableSave = 'true';
