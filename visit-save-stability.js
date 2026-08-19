@@ -23,6 +23,26 @@
     window.__visitEditId = null;
   }
 
+  function syncDashboardPeriod() {
+    const fromEl = document.getElementById('dashFrom');
+    const toEl = document.getElementById('dashTo');
+    if (!fromEl || !toEl || !Array.isArray(window.state?.records)) return;
+
+    const dates = window.state.records.map(r => r.tanggal).filter(Boolean).sort();
+    if (!dates.length) return;
+
+    const currentFrom = fromEl.value;
+    const currentTo = toEl.value;
+    const minDate = dates[0];
+    const maxDate = dates[dates.length - 1];
+
+    // Expand the active dashboard range only when it is still at the
+    // previous dataset boundaries or currently empty. This keeps deliberate
+    // user filtering intact while ensuring new records appear immediately.
+    if (!currentFrom || currentFrom === minDate || currentFrom > maxDate) fromEl.value = minDate;
+    if (!currentTo || currentTo < maxDate || currentTo === currentFrom) toEl.value = maxDate;
+  }
+
   async function saveVisit(event) {
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -62,6 +82,7 @@
 
       if (typeof window.closeForm === 'function') window.closeForm();
       if (typeof window.loadOnlineData === 'function') await window.loadOnlineData();
+      syncDashboardPeriod();
       if (typeof window.renderDashboard === 'function') window.renderDashboard();
       if (typeof window.renderList === 'function') window.renderList();
       window.msg?.('Data kunjungan berhasil disimpan.', false);
