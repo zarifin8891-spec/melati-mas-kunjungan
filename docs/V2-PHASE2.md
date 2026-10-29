@@ -1,0 +1,19 @@
+# V2.0 phase 2 — Linked site visits, Booking and Akad
+
+Continue the existing shared database, per the user's instruction. A pre-change data export (profiles, masters, legacy visits, V2 leads/followups) was saved privately. No backup containing consumer data belongs in Git.
+
+The initial proposal to expand existing lead CHECK constraints was rejected by automatic approval review and was NOT applied. It was replaced with a materially safer additive design. Applied migration: mmr_v2_additive_visits_closing_events. Do not replay the script db/mmr_v2_phase2.sql; consult migration history.
+
+New objects: mmr_v2_visits, mmr_v2_bookings, mmr_v2_akad, indexes, active-profile RLS policies and validating event triggers. The mmr_v2_pipeline view uses security_invoker=true and derives pipeline_status from the active booking/akad event, falling back to the original lead status. A second additive migration mmr_v2_additive_lead_chronology_guard protects intake dates and follow-up schedules (db/mmr_v2_phase2_chronology.sql). Existing lead constraints, legacy tables and stored status vocabulary were preserved. New before-insert/update guards on leads/followups enforce the closing relationship without rewriting their original policies/functions.
+
+Workflow: enter a lead; record site visits with accompanying sales, viewed unit, interest, objection and next action; create a booking after at least one visit on/before the booking date; record Akad from an active booking. A partial unique index prevents duplicate active lead and normalized unit bookings. An Akad row is unique per booking. Trigger operations and lead scheduling run atomically. Completed Akad rows block further prospect followups/visits; history remains readable.
+
+The unit field is a project-wide textual code (e.g. A-01), not a linked siteplan or inventory master. Matching ignores letter case and whitespace; different punctuation is not conflated. This scope is booking/akad tracking; nominal_booking is not an accounting receipt or confirmation of cash collection. No fabricated legacy conversions were performed.
+
+Only active admins may cancel a pre-Akad booking. A reason and a next-followup date are required. The cancellation keeps the original booking and records actor/time. The lead becomes available for another booking; Akad and cancelled booking records cannot be edited or erased via the browser. Immutable event correction/voiding beyond booking cancellation remains a future controlled workflow.
+
+Frontend: Leads now shows event-derived status and exposes Kunjungan / Closing. Separate paginated Kunjungan Leads and Booking & Akad menus show linked lead names, unit, sales/interest or payment method and Akad reference. Detail displays latest 30 visit/booking records; standalone lists page through all events in groups of 50. Followup overdue/today filters exclude Akad/Batal. V26 service-worker shell includes the new module. Legacy Dashboard/Pie 3D files were preserved.
+
+Verification completed: new/inline JS syntax; real database transactional integration script tests/phase2-database.sql passed for lead-to-visit-to-booking-to-Akad, dates, duplicate active units/leads, manual status bypass, closing followup guards, marketing cancellation rejection, admin cancellation/rebooking, missing-profile and anonymous reads. Every fixture was rolled back. Legacy visit count remained 61; V2 fixture counts returned to zero. Security advisor returned no finding naming mmr_v2 objects.
+
+Browser interaction/visual verification remains pending: the local browser installer returned an invalid archive. Existing tests/crm-phase1.cjs is an isolated mock UI smoke test, not proof of browser-to-Supabase authentication. Production merge is withheld pending browser tests. Next: weekly social metrics, editable V2 master choices, cohort Dashboard and explicit legacy mapping review.

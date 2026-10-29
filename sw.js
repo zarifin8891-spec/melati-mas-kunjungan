@@ -1,5 +1,5 @@
-const CACHE_NAME='melati-mas-kunjungan-v25-crm1';
-const APP_SHELL=['./','./index.html','./manifest.json','./icon-192.svg','./icon-512.svg','./dashboard-kavio-bright.css','./crm-v2.css','./crm-v2.js','./auth-enhancements.js','./role-enhancements.js','./login-stability.js','./navigation-fix.js','./role-session-fix.js','./user-management-revive.js','./session-clean-logout.js','./master-data-admin.js','./inactive-account-guard.js','./visit-save-stability.js','./delete-guard.js','./pie3d-dashboard-v23.js'];
+const CACHE_NAME='melati-mas-kunjungan-v26-closing';
+const APP_SHELL=['./','./index.html','./manifest.json','./icon-192.svg','./icon-512.svg','./dashboard-kavio-bright.css','./crm-v2.css','./crm-v2.js','./crm-journey.js','./auth-enhancements.js','./role-enhancements.js','./login-stability.js','./navigation-fix.js','./role-session-fix.js','./user-management-revive.js','./session-clean-logout.js','./master-data-admin.js','./inactive-account-guard.js','./visit-save-stability.js','./delete-guard.js','./pie3d-dashboard-v23.js'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(APP_SHELL)));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('melati-mas-kunjungan-')&&k!==CACHE_NAME).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',event=>{
