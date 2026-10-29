@@ -15,7 +15,7 @@
    for(const account of data.accounts){const row=document.createElement('p');row.style.cssText='font-size:13px;margin:10px 0';
     const label=document.createElement('b');label.textContent=account.platform+' — ';row.appendChild(label);
     if(account.url){const link=document.createElement('a');const url=new URL(account.url);if(url.protocol!=='https:')continue;link.href=url.href;link.target='_blank';link.rel='noopener';link.textContent=account.name;row.appendChild(link);}else{const name=document.createElement('span');name.textContent=account.name;row.appendChild(name);}
-    const status=document.createElement('small');status.style.cssText='display:block;color:#63758a;margin-top:3px';status.textContent=account.platform==='Facebook'?'Tautan Halaman dan izin statistik belum ditetapkan.':'Izin statistik belum terhubung.';row.appendChild(status);list.appendChild(row);
+    const status=document.createElement('small');status.style.cssText='display:block;color:#63758a;margin-top:3px';status.textContent='Akun tujuan tercatat • Izin statistik belum terhubung.';row.appendChild(status);list.appendChild(row);
    }
   }).catch(()=>{list.textContent='Daftar akun belum dapat dimuat. Muat ulang halaman.';});
 
