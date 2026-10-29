@@ -1,0 +1,17 @@
+{
+  "provider": "meta",
+  "app_id": "2044415312932575",
+  "configuration_id": "1417296747187746",
+  "configuration_name": "Melati Mas Statistik",
+  "token_type": "system_user",
+  "configured_token_lifetime_days": 60,
+  "reported_permissions": [
+    "instagram_basic",
+    "instagram_manage_insights",
+    "pages_show_list",
+    "pages_read_engagement",
+    "read_insights"
+  ],
+  "connection_status": "not_connected",
+  "enabled": false
+}
