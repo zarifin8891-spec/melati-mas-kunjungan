@@ -1,8 +1,20 @@
 {
   "accounts": [
-    {"platform":"Instagram","name":"@melatimasresidence","url":"https://www.instagram.com/melatimasresidence/"},
-    {"platform":"TikTok","name":"@melatimasresidence","url":"https://www.tiktok.com/@melatimasresidence"},
-    {"platform":"Facebook","name":"Melati Mas Residence","url":null}
+    {
+      "platform": "Instagram",
+      "name": "@melatimasresidence",
+      "url": "https://www.instagram.com/melatimasresidence/"
+    },
+    {
+      "platform": "TikTok",
+      "name": "@melatimasresidence",
+      "url": "https://www.tiktok.com/@melatimasresidence"
+    },
+    {
+      "platform": "Facebook",
+      "name": "Melati Mas Residence Cibodas",
+      "url": "https://www.facebook.com/melatimas.residence/"
+    }
   ],
-  "authorization_status":"not_connected"
+  "authorization_status": "not_connected"
 }
