@@ -13,7 +13,7 @@
 
       const title = document.getElementById('pageTitle');
       if (title) {
-        title.textContent = page === 'dashboard' ? 'Dashboard' : page === 'kunjungan' ? 'Data Kunjungan' : 'Setting';
+        title.textContent = page === 'leads' ? 'Leads & Follow-up' : page === 'dashboard' ? 'Dashboard' : page === 'kunjungan' ? 'Data Kunjungan' : 'Setting';
       }
 
       if (page === 'dashboard' && typeof window.renderDashboard === 'function') window.renderDashboard();
@@ -22,6 +22,7 @@
 
       if (typeof window.toggleMobileMenu === 'function') window.toggleMobileMenu(false);
       window.__navFixLastPage = page;
+      document.dispatchEvent(new CustomEvent('mmr:navigate', {detail: page}));
     } catch (error) {
       console.error('Navigation error:', error);
     }
@@ -79,3 +80,4 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
 })();
+
