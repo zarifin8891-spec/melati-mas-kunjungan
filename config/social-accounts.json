@@ -1,0 +1,8 @@
+{
+  "accounts": [
+    {"platform":"Instagram","name":"@melatimasresidence","url":"https://www.instagram.com/melatimasresidence/"},
+    {"platform":"TikTok","name":"@melatimasresidence","url":"https://www.tiktok.com/@melatimasresidence"},
+    {"platform":"Facebook","name":"Melati Mas Residence","url":null}
+  ],
+  "authorization_status":"not_connected"
+}
