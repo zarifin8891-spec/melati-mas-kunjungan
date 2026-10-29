@@ -18,7 +18,7 @@
     },
     status: {
       'Lead baru': '#4F8CF7', 'Dihubungi': '#A16AE8', 'Jadwal survei': '#FFB547',
-      'Sudah survei': '#58B8ED', 'Booking': '#15B890', 'Akad': '#19B6AE', 'Batal': '#F36C83',
+      'Sudah survei': '#58B8ED', 'Booking (riwayat)': '#15B890', 'Booking': '#15B890', 'Akad': '#19B6AE', 'Batal': '#F36C83',
       'Hanya tanya harga/Lihat Lokasi': '#4F8CF7',
       'Tertarik tapi masih membandingkan': '#A16AE8',
       'Closing/Booking': '#15B890',
@@ -94,7 +94,7 @@
     });
     const gradient = `conic-gradient(${parts.join(',')})`;
 
-    const legendRows = rows.slice(0, 7).map(([name, value], index) => {
+    const legendRows = rows.map(([name, value], index) => {
       const pct = (value / total * 100).toFixed(1).replace('.', ',');
       return `<div class="pie3d-legend-row"><i class="pie3d-dot" style="background:${colors[index]}"></i><span class="pie3d-name">${escapeValue(name)}</span><span class="pie3d-value">${value} · ${pct}%</span></div>`;
     }).join('');

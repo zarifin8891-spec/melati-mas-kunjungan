@@ -1,0 +1,21 @@
+# Unified application and legacy consolidation
+
+User approved a single application using the existing database, with legacy visits merged and duplicate sidebar/dashboard entries removed.
+
+Applied migrations: mmr_v2_unified_legacy_archive_views, mmr_v2_import_61_legacy_consumer_visits, mmr_v2_dashboard_unified_history, mmr_v2_legacy_stage_priority_and_period_bounds. Existing migration files are historical records; inspect database history before any replay.
+
+61 original consumer rows were mapped to 61 V2 lead IDs. Each complete source row is retained exactly in the RLS-protected mmr_v2_legacy_map.source_snapshot; no consumer data snapshot is included in Git. The original table remains an archive; user-facing navigation has a single Dashboard, Leads & Follow-up, Kunjungan, Booking & Akad, Media Sosial and Pengaturan. No automatic contact deduplication by name/phone was performed, to avoid merging different people. The source row UUID is the unique import key.
+
+mmr_v2_all_visits unifies new visit records and mapped original visit snapshots with SECURITY INVOKER semantics. Missing original unit, interest and objection fields remain null; they are never fabricated. Booking validation and chronology now recognize these inherited visits. Standalone visit list uses embedded lead-name columns in the view, avoiding unsupported relationship inference across a UNION view.
+
+Five original Closing/Booking statuses are retained as Booking (riwayat), included in aggregate booking counts with a visible historical-booking note. They do not reserve a fictitious unit or create an Akad/financial event. Users can complete actual booking details through the journey form; its historical booking date starts blank. A later real booking overrides historical state; cancelling that real booking does not resurrect the historical stage. Marking a historical lead Batal takes precedence over the original report.
+
+Three source rows lacked phone numbers: contact is labelled Belum diisi, the original empty value remains in the snapshot, and no WhatsApp URL is rendered for missing digits. Original payment/address/job/status/notes are kept in lead notes and complete source snapshots. Legacy K P R is normalized only for the payment chart.
+
+No original followup promise existed. Lead storage uses the source intake date solely as a compatibility sentinel for existing non-null constraints. The pipeline explicitly exposes needs_followup_schedule and UI displays Perlu dijadwalkan. These 60 missing schedules do not count as overdue. A real followup, new visit, actual booking, or an updated schedule clears the missing-schedule state. Imported lead edits require users to choose a schedule rather than silently accepting the compatibility sentinel.
+
+Dashboard now defaults to the full data period, starting 2 March 2026, instead of an empty October-only view. Aggregates after consolidation: 61 leads, 61 visit events, 61 surveyed leads, five historical booking reports, zero Akad, one Batal, 60 schedules to set, zero proven overdue dates. Source snapshots exactly matched all 61 archived rows after import. Tests/unified-history.sql passed for mapping uniqueness, inherited visit booking, historical cancellation priority, followup scheduling and RLS, with all test changes rolled back. Security advisor had no mmr_v2 finding.
+
+Automatic social sync remains a future account-authorized integration, not a connected feature. Available fields differ by platform: Instagram professional-account insights, TikTok authorized video metrics, and YouTube OAuth channel reports. Paid spend and messaging metrics require corresponding permissions/products. A ChatGPT analytics plugin alone does not wire the deployed application to a background sync service. Proposed app flow: identify brand accounts, authorize read-only OAuth, keep tokens server-side, sync provider snapshots with account/period/provenance, aggregate to weekly rows without overwriting manually verified data, and surface last-success/error timestamps. Do not treat unavailable metrics as zero or cumulative content lifetime counts as weekly performance.
+
+Browser inspection is being retried with the user's explicit approval for the Vercel authentication origin. Production merge/cutover still requires full signed-in role and mobile browser verification. No source account has been disabled yet.

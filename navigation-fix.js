@@ -1,5 +1,7 @@
 (() => {
   function safeGo(page) {
+    if(page==='dashboard')page='crm-dashboard';
+    if(page==='kunjungan')page='crm-visits';
     try {
       const target = document.getElementById('page-' + page);
       if (!target) return;
@@ -13,7 +15,7 @@
 
       const title = document.getElementById('pageTitle');
       if (title) {
-        title.textContent = page === 'crm-dashboard' ? 'Dashboard Pemasaran V2.0' : page === 'social' ? 'Media Sosial' : page === 'crm-visits' ? 'Kunjungan Leads' : page === 'crm-bookings' ? 'Booking & Akad' : page === 'leads' ? 'Leads & Follow-up' : page === 'dashboard' ? 'Dashboard' : page === 'kunjungan' ? 'Data Kunjungan' : 'Setting';
+        title.textContent = page === 'crm-dashboard' ? 'Dashboard' : page === 'social' ? 'Media Sosial' : page === 'crm-visits' ? 'Kunjungan' : page === 'crm-bookings' ? 'Booking & Akad' : page === 'leads' ? 'Leads & Follow-up' : page === 'dashboard' ? 'Dashboard' : page === 'kunjungan' ? 'Data Kunjungan' : 'Pengaturan';
       }
 
       if (page === 'dashboard' && typeof window.renderDashboard === 'function') window.renderDashboard();
