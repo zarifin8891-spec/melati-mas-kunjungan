@@ -2,10 +2,27 @@
   if (window.__melatiPie3dReadyV23) return;
   window.__melatiPie3dReadyV23 = true;
 
+  // Vibrant, balanced palette for the approved navy Dashboard theme.
+  // Fixed colors for recognized categories prevent colors from changing when
+  // filtering or when the category ranking changes.
   const PALETTES = {
-    pembayaran: ['#2563EB', '#F59E0B', '#16A34A', '#9333EA', '#DC2626', '#0891B2'],
-    status: ['#2563EB', '#F59E0B', '#16A34A', '#DC2626', '#9333EA', '#0891B2'],
-    default: ['#2563EB', '#F59E0B', '#16A34A', '#9333EA', '#DC2626', '#0891B2']
+    pembayaran: ['#4F8CF7', '#FFB547', '#A16AE8', '#19B6AE', '#F36C83', '#58B8ED'],
+    status: ['#4F8CF7', '#A16AE8', '#15B890', '#F36C83', '#FFB547', '#58B8ED'],
+    default: ['#4F8CF7', '#FFB547', '#15B890', '#A16AE8', '#F36C83', '#58B8ED']
+  };
+  const CATEGORY_COLORS = {
+    pembayaran: {
+      'KPR': '#4F8CF7',
+      'Cash Keras': '#FFB547',
+      'Cash Bertahap': '#A16AE8'
+    },
+    status: {
+      'Hanya tanya harga/Lihat Lokasi': '#4F8CF7',
+      'Tertarik tapi masih membandingkan': '#A16AE8',
+      'Closing/Booking': '#15B890',
+      'Tidak lanjut/Cari perumahan lain': '#F36C83',
+      'Siap Booking/Minta Simulasi KPR': '#FFB547'
+    }
   };
 
   function injectStyles() {
@@ -17,9 +34,9 @@
       .pie3d-stage{width:168px;height:168px;display:grid;place-items:center;perspective:650px;flex:0 0 auto}
       .pie3d{position:relative;width:150px;height:150px;transform-style:preserve-3d;transform:perspective(650px) rotateX(58deg) rotateZ(-8deg);border-radius:50%}
       .pie3d-depth,.pie3d-top{position:absolute;inset:0;border-radius:50%;background:var(--pie-bg)}
-      .pie3d-depth{transform:translateY(11px);filter:brightness(.72)}
+      .pie3d-depth{transform:translateY(11px);filter:brightness(.68)}
       .pie3d-top{box-shadow:0 9px 18px rgba(16,24,40,.16)}
-      .pie3d-highlight{position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.24),transparent 34%);pointer-events:none}
+      .pie3d-highlight{position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.14),transparent 34%);pointer-events:none}
       .pie3d-total{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotateZ(8deg) rotateX(-58deg);text-align:center;z-index:3;pointer-events:none;white-space:nowrap}
       .pie3d-total b{display:block;font-size:21px;line-height:1.05;color:#172033}
       .pie3d-total span{display:block;font-size:9px;color:#667085;margin-top:3px;text-transform:uppercase;letter-spacing:.08em}
@@ -48,8 +65,10 @@
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }
 
-  function paletteFor(key) {
-    return PALETTES[key] || PALETTES.default;
+  function colorFor(key, category, index) {
+    const mapping = CATEGORY_COLORS[key] || {};
+    const fixed = mapping[category];
+    return fixed || (PALETTES[key] || PALETTES.default)[index % (PALETTES[key] || PALETTES.default).length];
   }
 
   function renderPie3D(id, data, key) {
@@ -64,18 +83,18 @@
       return;
     }
 
-    const colors = paletteFor(key);
+    const colors = rows.map(([name], index) => colorFor(key, name, index));
     let cursor = 0;
     const parts = rows.map(([, value], index) => {
       const start = cursor;
       cursor += (value / total) * 100;
-      return `${colors[index % colors.length]} ${start}% ${cursor}%`;
+      return `${colors[index]} ${start}% ${cursor}%`;
     });
     const gradient = `conic-gradient(${parts.join(',')})`;
 
     const legendRows = rows.slice(0, 7).map(([name, value], index) => {
       const pct = (value / total * 100).toFixed(1).replace('.', ',');
-      return `<div class="pie3d-legend-row"><i class="pie3d-dot" style="background:${colors[index % colors.length]}"></i><span class="pie3d-name">${escapeValue(name)}</span><span class="pie3d-value">${value} · ${pct}%</span></div>`;
+      return `<div class="pie3d-legend-row"><i class="pie3d-dot" style="background:${colors[index]}"></i><span class="pie3d-name">${escapeValue(name)}</span><span class="pie3d-value">${value} · ${pct}%</span></div>`;
     }).join('');
 
     host.innerHTML = `
