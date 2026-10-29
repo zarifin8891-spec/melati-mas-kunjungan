@@ -52,7 +52,9 @@ Applied migration `mmr_v2_meta_oauth_backend`. SQL source: db/meta-backend.sql. 
 - Node integration tests with mock Supabase/Meta: encryption/tamper, preview-only config, login/admin/inactive checks, CSRF origin, callback host, single-use state, browser mismatch, cancellation, missing permissions, explicit asset match, pagination host safety, expiry/revocation, token erasure, stale revision and granular system-user asset discovery.
 - Real database transaction tests: correct/wrong browser, replay, expired state, stale revision, anon/authenticated privilege denials. Rolled back.
 - Syntax checks for new JS/MJS.
-- Deployment smoke test must be recorded after push. OAuth live tests remain pending owner secret configuration.
+- Vercel preview deployment READY. Authenticated deployment fetch to the stable alias `/api/meta?action=status` returned HTTP 200 with `configured:false` and only the expected missing settings: SUPABASE_SERVICE_ROLE_KEY, META_APP_SECRET, PREVIEW_ACTIVATION. Encryption key, fixed callback and Graph version were provisioned successfully.
+- Original consumer visits remain 61; V2 leads remain 61; provider connections and OAuth state rows remain zero after rollback tests.
+- OAuth live tests remain pending owner secret configuration.
 
 ## References
 
