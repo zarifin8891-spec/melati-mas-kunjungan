@@ -94,7 +94,7 @@
 
     const legendRows = rows.slice(0, 7).map(([name, value], index) => {
       const pct = (value / total * 100).toFixed(1).replace('.', ',');
-      return `<div class="pie3d-legend-row"><i class="pie3d-dot" style="background:${colors[index % colors.length]}"></i><span class="pie3d-name">${escapeValue(name)}</span><span class="pie3d-value">${value} · ${pct}%</span></div>`;
+      return `<div class="pie3d-legend-row"><i class="pie3d-dot" style="background:${colors[index]}"></i><span class="pie3d-name">${escapeValue(name)}</span><span class="pie3d-value">${value} · ${pct}%</span></div>`;
     }).join('');
 
     host.innerHTML = `
