@@ -17,6 +17,8 @@
       'Cash Bertahap': '#A16AE8'
     },
     status: {
+      'Lead baru': '#4F8CF7', 'Dihubungi': '#A16AE8', 'Jadwal survei': '#FFB547',
+      'Sudah survei': '#58B8ED', 'Booking': '#15B890', 'Akad': '#19B6AE', 'Batal': '#F36C83',
       'Hanya tanya harga/Lihat Lokasi': '#4F8CF7',
       'Tertarik tapi masih membandingkan': '#A16AE8',
       'Closing/Booking': '#15B890',
@@ -76,7 +78,7 @@
     if (!host) return;
     injectStyles();
 
-    const rows = counts(data, key);
+    const rows = Array.isArray(data) && data.every(Array.isArray) ? data : counts(data, key);
     const total = rows.reduce((sum, row) => sum + row[1], 0);
     if (!rows.length || !total) {
       host.innerHTML = '<div class="empty">Tidak ada data</div>';
@@ -119,6 +121,7 @@
     }
   }
 
+  window.mmrPie3D = renderPie3D;
   injectStyles();
   const timer = setInterval(() => {
     patchRenderers();
@@ -129,3 +132,4 @@
   }, 100);
   setTimeout(() => clearInterval(timer), 10000);
 })();
+

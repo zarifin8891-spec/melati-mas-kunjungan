@@ -13,7 +13,7 @@
 
       const title = document.getElementById('pageTitle');
       if (title) {
-        title.textContent = page === 'crm-visits' ? 'Kunjungan Leads' : page === 'crm-bookings' ? 'Booking & Akad' : page === 'leads' ? 'Leads & Follow-up' : page === 'dashboard' ? 'Dashboard' : page === 'kunjungan' ? 'Data Kunjungan' : 'Setting';
+        title.textContent = page === 'crm-dashboard' ? 'Dashboard Pemasaran V2.0' : page === 'social' ? 'Media Sosial' : page === 'crm-visits' ? 'Kunjungan Leads' : page === 'crm-bookings' ? 'Booking & Akad' : page === 'leads' ? 'Leads & Follow-up' : page === 'dashboard' ? 'Dashboard' : page === 'kunjungan' ? 'Data Kunjungan' : 'Setting';
       }
 
       if (page === 'dashboard' && typeof window.renderDashboard === 'function') window.renderDashboard();
