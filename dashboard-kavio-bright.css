@@ -1,10 +1,11 @@
 /* Melati Mas Kunjungan V1.2 trial
-   KAVIO Bright Dashboard Foundation — scoped to Dashboard only.
+   KAVIO Bright Dashboard Foundation — blue supplied by customer (#1F4E79).
+   Scoped to Dashboard only.
    No changes to business rules, database access or chart calculations. */
 #page-dashboard {
-  --dash-primary: #078c83;
-  --dash-primary-dark: #076b66;
-  --dash-blue: #3278e6;
+  --dash-primary: #1f4e79;
+  --dash-primary-dark: #163d60;
+  --dash-blue: #4388c9;
   --dash-yellow: #f3b73b;
   --dash-purple: #8660d5;
   --dash-border: #dceaf0;
@@ -19,8 +20,8 @@
 }
 .app:has(#page-dashboard.active) .topbar h1 { color: #173e52; font-weight: 750; letter-spacing: -.02em; }
 .app:has(#page-dashboard.active) .topbar .primary {
-  background: linear-gradient(120deg,#069b92,#087c8c);
-  box-shadow: 0 2px 6px rgba(5,137,139,.12);
+  background: linear-gradient(120deg,#326f9d,#1f4e79);
+  box-shadow: 0 2px 6px rgba(31,78,121,.16);
 }
 #page-dashboard .panel,
 #page-dashboard .card {
@@ -43,7 +44,7 @@
 #page-dashboard .panel-head small,
 #page-dashboard #periodText { color: var(--dash-muted); font-size: 11px; }
 #page-dashboard .panel:first-child {
-  border-top: 3px solid #10a6a0;
+  border-top: 3px solid #1f4e79;
   padding-top: 10px;
 }
 #page-dashboard .filters { gap: 7px; align-items: end; }
@@ -65,7 +66,7 @@
   border-radius: 7px;
   font-size: 11px;
 }
-#page-dashboard .filters .primary { background: #08978e; }
+#page-dashboard .filters .primary { background: #1f4e79; }
 #page-dashboard .filters .secondary,
 #page-dashboard .panel-head .secondary { background: #edf5fc; color: #23617b; }
 #page-dashboard #metrics {
@@ -79,7 +80,7 @@
   min-width: 0;
   min-height: 84px;
   padding: 12px 13px;
-  border-top: 3px solid #8dd8d2;
+  border-top: 3px solid #8eafd1;
 }
 #page-dashboard #metrics .total-box {
   grid-column: auto;
@@ -88,20 +89,20 @@
   grid-template-columns: 1.15fr 1fr;
   min-height: 84px;
   padding: 0;
-  border-top-color: #04a99a;
+  border-top-color: #1f4e79;
   overflow: hidden;
-  background: linear-gradient(135deg,#effefa,#ffffff 70%);
+  background: linear-gradient(135deg,#eaf3fc,#ffffff 70%);
 }
-#page-dashboard .total-main { border-right: 1px solid #cae9e7; }
-#page-dashboard .total-main .label { font-size: 11px; font-weight: 650; color: #397478; }
-#page-dashboard .total-main .value { font-size: 36px; font-weight: 800; color: #077f80; margin-top: 5px; }
-#page-dashboard .total-side-item:first-child { border-bottom: 1px solid #d8ebe9; }
+#page-dashboard .total-main { border-right: 1px solid #d4e2f0; }
+#page-dashboard .total-main .label { font-size: 11px; font-weight: 650; color: #4c6882; }
+#page-dashboard .total-main .value { font-size: 36px; font-weight: 800; color: #1f4e79; margin-top: 5px; }
+#page-dashboard .total-side-item:first-child { border-bottom: 1px solid #d8e4f0; }
 #page-dashboard .total-side-item .label { font-size: 10px; color: #536f7a; }
 #page-dashboard .total-side-item .value { font-size: 20px; font-weight: 750; color: #244d63; }
 #page-dashboard #metrics .metric .label { font-size: 11px; font-weight: 650; color: #526b80; }
 #page-dashboard #metrics .metric .value { font-size: 25px; margin-top: 5px; color: #263f59; }
 #page-dashboard #metrics .metric .sub { font-size: 10px; margin-top: 4px; line-height: 1.3; color: #6a7e91; }
-#page-dashboard #metrics .metric:nth-child(2) { border-top-color: #20b879; }
+#page-dashboard #metrics .metric:nth-child(2) { border-top-color: #3e85b6; }
 #page-dashboard #metrics .metric:nth-child(3) { border-top-color: #4195ef; }
 #page-dashboard #metrics .metric:nth-child(4) { border-top-color: #f3bc4c; }
 #page-dashboard #metrics .metric:nth-child(5) { border-top-color: #9373e5; }
@@ -114,7 +115,7 @@
 #page-dashboard .chart { height: 210px; min-height: 0; overflow: visible; }
 #page-dashboard .bars { gap: 7px; padding: 8px 3px 3px; }
 #page-dashboard .bar-label { font-size: 10px; }
-#page-dashboard .bar { background: linear-gradient(180deg,#3dbab7,#15858a); }
+#page-dashboard .bar { background: linear-gradient(180deg,#5c9acb,#1f4e79); }
 #page-dashboard .bar-value { font-size: 10px; font-weight: 750; }
 #page-dashboard .pie3d-wrap { gap: 12px; width: 100%; min-height: 170px; }
 #page-dashboard .pie3d-stage { width: 140px; height: 142px; flex: 0 0 140px; }
@@ -207,4 +208,22 @@
   #page-dashboard .pie3d-stage { width: 98px; flex-basis: 98px; height: 110px; }
   #page-dashboard .pie3d { width: 94px; height: 94px; }
   #page-dashboard .pie3d-legend { font-size: 9px; }
+}
+
+/* The Dashboard alone uses the blue supplied by the customer; other modules stay unchanged. */
+.app:has(#page-dashboard.active) .sidebar { background: #1f4e79; }
+.app:has(#page-dashboard.active) .sidebar .nav button { color: #e5f0fb; }
+.app:has(#page-dashboard.active) .sidebar .nav button.active,
+.app:has(#page-dashboard.active) .sidebar .nav button:hover {
+  background: #326f9d;
+  color: #ffffff;
+}
+.app:has(#page-dashboard.active) .sidebar .brand small,
+.app:has(#page-dashboard.active) .sidebar .foot { color: #c7d9ed; }
+.app:has(#page-dashboard.active) .sidebar .logo { color: #1f4e79; background: #eaf3fc; }
+.app:has(#page-dashboard.active) .topbar .primary:hover,
+#page-dashboard .filters .primary:hover { background: #163d60; }
+#page-dashboard .field input:focus {
+  border-color: #437eaf;
+  box-shadow: 0 0 0 3px rgba(31,78,121,.12);
 }
