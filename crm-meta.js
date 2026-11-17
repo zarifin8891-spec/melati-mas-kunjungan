@@ -10,9 +10,33 @@
   const actions=document.createElement('div');actions.className='actions';body.appendChild(actions);
   actions.appendChild(button(s.status==='not_connected'?'Hubungkan Meta':'Hubungkan ulang',async()=>{const r=await call('start','POST');const url=new URL(r.authorization_url);if(url.origin!=='https://www.facebook.com')throw Error('Alamat otorisasi tidak valid.');location.assign(url.href);}));
   if(['awaiting_asset','connected'].includes(s.status))actions.appendChild(button('Pilih akun',choose));
+  if(s.status==='connected')actions.appendChild(button('Tarik statistik minggu lalu',loadWeekly));
   if(s.status==='connected')actions.appendChild(button('Uji koneksi',async()=>{await call('verify','POST');notice('Akses akun berhasil diverifikasi. Statistik belum disinkronkan.');}));
   if(s.status!=='not_connected')actions.appendChild(button('Putuskan koneksi',async()=>{if(!confirm('Putuskan koneksi Meta pada aplikasi pengembangan ini?'))return;await call('disconnect','POST');await refresh();notice('Token tersimpan sudah dihapus. Izin di akun Meta dapat dikelola melalui Meta Business Integrations.');}));
  }catch(e){if(g===generation)notice(e.message);}}
+ async function loadWeekly(){
+  const g=generation;
+  const report=await call('weekly_insights');
+  if(g!==generation)return;
+  const section=document.createElement('div');
+  section.className='meta-weekly-result';
+  const caption=document.createElement('p');
+  caption.textContent=report.start_date+' – '+report.end_date+' (waktu Pasifik) • Sumber: '+report.source;
+  section.appendChild(caption);
+  for(const item of report.metrics){
+   const line=document.createElement('p');
+   const label=item.platform==='Facebook'?'Facebook · Pemirsa unik konten':'Instagram · Jangkauan';
+   const value=item.status==='available'?Number(item.value).toLocaleString('id-ID'):
+    item.status==='no_data'?'Data belum tersedia':'Gagal dimuat. Coba lagi.';
+   line.textContent=label+': '+value;
+   section.appendChild(line);
+  }
+  const timestamp=document.createElement('small');
+  timestamp.textContent='Diperiksa '+new Date(report.checked_at).toLocaleString('id-ID',{timeZone:'Asia/Jakarta'})+' WIB';
+  section.appendChild(timestamp);
+  body.querySelector('.meta-weekly-result')?.remove();
+  body.appendChild(section);
+ }
  async function choose(){const g=generation;const r=await call('assets');if(g!==generation)return;const form=document.createElement('form'),label=document.createElement('label'),select=document.createElement('select');select.id='meta-asset-selection';label.htmlFor=select.id;label.textContent='Pilih Halaman dan akun Instagram Melati Mas';select.required=true;
   const empty=document.createElement('option');empty.value='';empty.textContent='Pilih akun yang benar';select.appendChild(empty);
   for(const a of r.assets){const o=document.createElement('option');o.value=a.page_id;o.textContent=a.page_name+' • '+(a.instagram_username?'@'+a.instagram_username:'Instagram belum terkait');o.disabled=!a.instagram_id||a.instagram_username?.toLowerCase()!=='melatimasresidence';select.appendChild(o);}

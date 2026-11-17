@@ -1,5 +1,6 @@
 import { randomUUID, randomBytes, createHash, createHmac, createCipheriv, createDecipheriv } from 'node:crypto';
 import configuration from '../config/meta-integration.json' with { type: 'json' };
+import { readWeeklyInsights } from './meta-insights.mjs';
 const SCOPE='development', COOKIE='__Host-mmr-meta-state';
 const REQUIRED=['instagram_basic','instagram_manage_insights','pages_show_list','pages_read_engagement','read_insights'];
 export class SafeError extends Error { constructor(code,status=400){super(code);this.status=status;} }
@@ -60,7 +61,7 @@ export function createHandler({env=process.env,fetcher=fetch,clock=()=>Date.now(
   let action,c,row;
   try{
    const u=new URL(req.url,'https://internal.invalid');action=u.searchParams.get('action')||'status';
-   if(!['status','start','callback','assets','select','disconnect','verify'].includes(action))throw new SafeError('not_found',404);
+   if(!['status','start','callback','assets','select','disconnect','verify','weekly_insights'].includes(action))throw new SafeError('not_found',404);
    const expected=['start','select','disconnect','verify'].includes(action)?'POST':'GET';if(req.method!==expected)throw new SafeError('method_not_allowed',405);
    c=settings(env);
    // Without server credentials, return no account data and never enable controls.
@@ -116,6 +117,15 @@ export function createHandler({env=process.env,fetcher=fetch,clock=()=>Date.now(
     if(p.id!==String(body.page_id)||p.instagram_business_account.id!==body.instagram_id)throw new SafeError('asset_mismatch',400);
     await patch(c,row,{credential:seal({token:bundle.token,page_ids:bundle.page_ids,page_token:p.access_token},c.key),page_id:p.id,page_name:String(p.name||''),instagram_id:p.instagram_business_account.id,instagram_username:p.instagram_business_account.username,status:'connected'});
     return send(200,{status:'connected'});
+   }
+   if(action==='weekly_insights'){
+    if(row.status!=='connected'||!bundle.page_token)throw new SafeError('select_asset_first',409);
+    if(!/^\d+$/.test(row.page_id)||!/^\d+$/.test(row.instagram_id))throw new SafeError('asset_mismatch',409);
+    const report=await readWeeklyInsights({
+     readGraph:(path,params)=>graph(c,path,bundle.page_token,params),
+     pageId:row.page_id,instagramId:row.instagram_id,now:clock()
+    });
+    return send(200,{...report,checked_at:new Date(clock()).toISOString()});
    }
    if(action==='verify'){
     if(row.status!=='connected'||!bundle.page_token)throw new SafeError('select_asset_first',409);
