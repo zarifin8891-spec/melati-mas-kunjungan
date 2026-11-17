@@ -18,7 +18,7 @@
     if (document.getElementById('auth-enhancement-style')) return;
     const style = document.createElement('style');
     style.id = 'auth-enhancement-style';
-    style.textContent = '.password-wrap{position:relative}.password-wrap input{width:100%;padding-right:48px}.password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;background:transparent;color:#667085;border-radius:8px;display:grid;place-items:center;padding:0;cursor:pointer}.password-toggle:hover{background:#f2f4f7;color:#344054}.password-toggle:focus-visible{outline:2px solid #6eafa4;outline-offset:2px}.password-toggle svg{width:20px;height:20px;pointer-events:none}.auth-link-row{display:flex;justify-content:center;margin-top:12px}.auth-link{border:0;background:transparent;color:#176b5d;font-size:12px;font-weight:700;padding:6px 8px;cursor:pointer}.auth-link:hover{text-decoration:underline}.auth-link:disabled{opacity:.6;cursor:default;text-decoration:none}.reset-panel{margin-top:14px;padding:14px;border:1px solid #e6eaf0;border-radius:12px;background:#f8fafc}.reset-panel h3{margin:0 0 8px;font-size:14px}.reset-panel p{margin:0 0 10px;font-size:11px;color:#667085}.reset-panel .reset-field{display:grid;gap:6px;margin-top:10px}.reset-panel label{font-size:11px;color:#667085;font-weight:700}.reset-panel input{border:1px solid #d6dbe4;border-radius:9px;padding:9px 10px;background:#fff;outline:none}.reset-panel .reset-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.reset-panel .reset-actions button{border:0;border-radius:9px;padding:8px 12px;font-weight:700;cursor:pointer}.reset-cancel{background:#eef2f6;color:#344054}.reset-submit{background:#176b5d;color:#fff}.reset-submit:disabled{opacity:.65;cursor:default}.auth-link.waiting{color:#667085}
+    style.textContent = '.password-wrap{position:relative}.password-wrap input{width:100%;padding-right:48px}.password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;background:transparent;color:#667085;border-radius:8px;display:grid;place-items:center;padding:0;cursor:pointer}.password-toggle:hover{background:#f2f4f7;color:#344054}.password-toggle:focus-visible{outline:2px solid #6eafa4;outline-offset:2px}.password-toggle svg{width:20px;height:20px;pointer-events:none}.auth-link-row{display:flex;justify-content:center;margin-top:12px}.auth-link{border:0;background:transparent;color:#176b5d;font-size:12px;font-weight:700;padding:6px 8px;cursor:pointer}.auth-link:hover{text-decoration:underline}.auth-link:disabled{opacity:.6;cursor:default;text-decoration:none}.reset-panel{margin-top:14px;padding:14px;border:1px solid #e6eaf0;border-radius:12px;background:#f8fafc}.reset-panel h3{margin:0 0 8px;font-size:14px}.reset-panel p{margin:0 0 10px;font-size:11px;color:#667085}.reset-panel .reset-field{display:grid;gap:6px;margin-top:10px}.reset-panel label{font-size:11px;color:#667085;font-weight:700}.reset-panel input{border:1px solid #d6dbe4;border-radius:9px;padding:9px 10px;background:#fff;outline:none}.reset-panel .reset-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.reset-panel .reset-actions button{border:0;border-radius:9px;padding:8px 12px;font-weight:700;cursor:pointer}.reset-cancel{background:#eef2f6;color:#344054}.reset-submit{background:#176b5d;color:#fff}.reset-submit:disabled{opacity:.65;cursor:default}.auth-link.waiting{color:#667085}';
     document.head.appendChild(style);
   }
 
@@ -125,12 +125,17 @@
     if (!authCard || !loginForm || document.getElementById('resetPasswordPanel')) return null;
     injectStyles();
     loginForm.style.display = 'none';
+    document.getElementById('recoveryCode')?.closest('details')?.remove();
     const panel = document.createElement('div');
     panel.id = 'resetPasswordPanel';
     panel.className = 'reset-panel';
     panel.innerHTML = '<h3>Buat Password Baru</h3><p>Masukkan password baru untuk akun ini. Gunakan minimal 6 karakter.</p><div class="reset-field"><label>PASSWORD BARU</label><input id="newPassword" type="password" minlength="6" autocomplete="new-password"></div><div class="reset-field"><label>ULANGI PASSWORD</label><input id="confirmPassword" type="password" minlength="6" autocomplete="new-password"></div><div class="reset-actions"><button type="button" class="reset-cancel" id="resetCancel">Batal</button><button type="button" class="reset-submit" id="resetSubmit">Simpan Password</button></div>';
     authCard.appendChild(panel);
-    document.getElementById('resetCancel').addEventListener('click', () => window.location.reload());
+    document.getElementById('resetCancel').addEventListener('click', async () => {
+      const { error } = await sb.auth.signOut({ scope: 'local' });
+      if (error) return window.msg?.(friendlyAuthError(error.message), true);
+      window.location.reload();
+    });
     document.getElementById('resetSubmit').addEventListener('click', async () => {
       const a = document.getElementById('newPassword').value;
       const b = document.getElementById('confirmPassword').value;
@@ -167,11 +172,53 @@
     });
   }
 
+  function addRecoveryCodeForm() {
+    const loginForm = document.getElementById('loginForm');
+    if (!loginForm) return;
+    injectStyles();
+    const details = document.createElement('details');
+    details.className = 'reset-panel';
+    details.innerHTML = '<summary>Saya punya kode reset</summary><form><div class="reset-field"><label for="recoveryEmail">Email akun</label><input id="recoveryEmail" type="email" autocomplete="email" required></div><div class="reset-field"><label for="recoveryCode">Kode dari email</label><input id="recoveryCode" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]+" required></div><div class="reset-actions"><button class="reset-submit" type="submit">Verifikasi Kode</button></div></form>';
+    loginForm.after(details);
+    const form = details.querySelector('form');
+    details.addEventListener('toggle', () => {
+      const email = form.querySelector('#recoveryEmail');
+      if (details.open && !email.value) email.value = document.getElementById('authEmail').value;
+    });
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const email = form.querySelector('#recoveryEmail').value.trim();
+      const token = form.querySelector('#recoveryCode').value.trim();
+      const button = form.querySelector('button');
+      button.disabled = true;
+      try {
+        const { data, error } = await sb.auth.verifyOtp({ email, token, type: 'recovery' });
+        if (error || !data.session) {
+          window.msg?.('Kode tidak dapat diverifikasi. Periksa kode dari email reset terbaru.', true);
+          return;
+        }
+        document.getElementById('authMsg').style.display = 'none';
+        document.getElementById('authScreen').style.display = 'flex';
+        document.getElementById('appShell').style.display = 'none';
+        buildResetPanel();
+      } catch (error) {
+        window.msg?.(friendlyAuthError(error.message), true);
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
   function init() {
     addPasswordToggle();
     improveMessages();
     addForgotPassword();
     handlePasswordRecovery();
+    addRecoveryCodeForm();
+    const errorCode = new URLSearchParams(window.location.hash.slice(1)).get('error_code');
+    if (errorCode === 'otp_expired') {
+      window.msg?.('Tautan reset sudah terpakai atau kedaluwarsa. Minta email reset baru.', true);
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
