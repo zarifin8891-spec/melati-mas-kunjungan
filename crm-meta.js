@@ -1,6 +1,6 @@
 (() => {
- const messages={login_required:'Sesi berakhir. Silakan masuk kembali.',admin_required:'Koneksi Meta hanya dapat dikelola admin.',meta_not_configured:'Konfigurasi server Meta belum lengkap.',meta_reconnect_required:'Izin Meta berakhir atau dicabut. Hubungkan kembali.',origin_denied:'Buka aplikasi melalui alamat callback yang dikonfigurasi.',use_callback_host:'Gunakan alamat preview tetap yang dikonfigurasi untuk Meta.',meta_permissions_missing:'Izin statistik belum lengkap. Periksa konfigurasi Meta.',connection_changed:'Koneksi berubah. Muat ulang status sebelum melanjutkan.',instagram_account_mismatch:'Akun Instagram yang dipilih bukan @melatimasresidence.',linked_instagram_required:'Halaman ini belum memiliki akun Instagram terkait.',asset_mismatch:'Identitas akun berubah. Periksa kembali aset Meta.',meta_request_failed:'Meta belum mengizinkan permintaan ini. Periksa izin dan aset pada akun Meta.',select_asset_first:'Pilih Halaman dan Instagram terlebih dahulu.'};
- const statuses={not_connected:'Belum terhubung',awaiting_asset:'Otorisasi diterima • Pilih akun',connected:'Akun terhubung • Statistik belum disinkronkan',reconnect_required:'Perlu dihubungkan ulang',not_configured:'Menunggu konfigurasi server'};
+ const messages={login_required:'Sesi berakhir. Silakan masuk kembali.',admin_required:'Koneksi Meta hanya dapat dikelola admin.',meta_not_configured:'Konfigurasi server Meta belum lengkap.',meta_reconnect_required:'Izin Meta berakhir atau dicabut. Hubungkan kembali.',origin_denied:'Buka aplikasi melalui alamat callback yang dikonfigurasi.',use_callback_host:'Gunakan alamat preview tetap yang dikonfigurasi untuk Meta.',meta_permissions_missing:'Izin statistik belum lengkap. Periksa konfigurasi Meta.',connection_changed:'Koneksi berubah. Muat ulang status sebelum melanjutkan.',instagram_account_mismatch:'Akun Instagram yang dipilih bukan @melatimasresidence.',linked_instagram_required:'Halaman ini belum memiliki akun Instagram terkait.',asset_mismatch:'Identitas akun berubah. Periksa kembali aset Meta.',meta_request_failed:'Meta belum mengizinkan permintaan ini. Periksa izin dan aset pada akun Meta.',statistics_save_failed:'Statistik berhasil dibaca tetapi gagal disimpan. Coba tarik kembali.',select_asset_first:'Pilih Halaman dan Instagram terlebih dahulu.'};
+ const statuses={not_connected:'Belum terhubung',awaiting_asset:'Otorisasi diterima • Pilih akun',connected:'Akun terhubung',reconnect_required:'Perlu dihubungkan ulang',not_configured:'Menunggu konfigurasi server'};
  let panel,body,generation=0,busy=false;
  async function call(action,method='GET',data){const {data:s,error}=await sb.auth.getSession();if(error||!s.session)throw Error(messages.login_required);const r=await fetch('/api/meta?action='+action,{method,cache:'no-store',signal:AbortSignal.timeout(20000),headers:{Authorization:'Bearer '+s.session.access_token,...(method==='POST'?{'Content-Type':'application/json'}:{})},...(method==='POST'?{body:JSON.stringify(data||{})}:{})});let result;try{result=await r.json();}catch{throw Error('Backend Meta belum dapat diakses pada alamat ini.');}if(!r.ok){const codes=[];if(Number.isSafeInteger(result.meta_code))codes.push(String(result.meta_code));if(Number.isSafeInteger(result.meta_subcode))codes.push(String(result.meta_subcode));throw Error((messages[result.error]||'Koneksi Meta belum dapat diproses. Coba muat ulang status.')+(codes.length?' (Kode Meta '+codes.join('/')+')':'')+(Array.isArray(result.meta_permissions)&&result.meta_permissions.length?' Izin yang disebut Meta: '+result.meta_permissions.filter(p=>['business_management','instagram_basic','instagram_manage_insights','pages_show_list','pages_read_engagement','read_insights'].includes(p)).join(', '):''));}return result;}
  function button(label,fn){const b=document.createElement('button');b.type='button';b.className='btn secondary';b.textContent=label;b.onclick=async()=>{if(busy){notice('Permintaan sebelumnya masih berjalan.');return;}busy=true;b.disabled=true;try{await fn();}catch(e){notice(e.name==='TimeoutError'?'Server tidak merespons dalam 20 detik. Silakan coba lagi.':e.message);}finally{busy=false;if(b.isConnected)b.disabled=false;}};return b;}
@@ -16,7 +16,8 @@
  }catch(e){if(g===generation)notice(e.message);}}
  async function loadWeekly(){
   const g=generation;
-  const report=await call('weekly_insights');
+  notice('Sedang menarik dan menyimpan statistik Meta…');
+  const report=await call('weekly_insights','POST');
   if(g!==generation)return;
   const section=document.createElement('div');
   section.className='meta-weekly-result';
@@ -36,14 +37,46 @@
   section.appendChild(timestamp);
   body.querySelector('.meta-weekly-result')?.remove();
   body.appendChild(section);
+  notice(report.saved_count+' metrik berhasil disimpan. Metrik yang gagal dibaca dapat dicoba kembali.');
+  await Promise.all([renderHistory('social'),renderHistory('crm-dashboard')]);
  }
  async function choose(){const g=generation;const r=await call('assets');if(g!==generation)return;const form=document.createElement('form'),label=document.createElement('label'),select=document.createElement('select');select.id='meta-asset-selection';label.htmlFor=select.id;label.textContent='Pilih Halaman dan akun Instagram Melati Mas';select.required=true;
   const empty=document.createElement('option');empty.value='';empty.textContent='Pilih akun yang benar';select.appendChild(empty);
   for(const a of r.assets){const o=document.createElement('option');o.value=a.page_id;o.textContent=a.page_name+' • '+(a.instagram_username?'@'+a.instagram_username:'Instagram belum terkait');o.disabled=!a.instagram_id||a.instagram_username?.toLowerCase()!=='melatimasresidence';select.appendChild(o);}
   form.append(label,select);form.appendChild(button('Gunakan akun ini',async()=>{const a=r.assets.find(x=>x.page_id===select.value);if(!a)throw Error('Pilih akun terlebih dahulu.');await call('select','POST',{page_id:a.page_id,instagram_id:a.instagram_id,revision:r.revision});await refresh();notice('Akun sudah dipilih. Gunakan Uji koneksi untuk memeriksa akses.');}));form.onsubmit=e=>e.preventDefault();body.querySelector('form')?.remove();body.appendChild(form);if(!r.assets.length)notice('Tidak ada Halaman yang diberikan oleh Meta. Periksa akses aset bisnis dan hubungkan ulang.');}
+
+ let historyGeneration=0;
+ async function renderHistory(pageName){
+  const host=document.getElementById('page-'+pageName);
+  if(!host||!['admin','marketing'].includes(document.body.dataset.userRole))return;
+  let section=host.querySelector('.meta-history');
+  if(!section){section=document.createElement('div');section.className='panel meta-history';host.appendChild(section);}
+  const generation=historyGeneration;
+  section.textContent='Memuat riwayat statistik Meta…';
+  const result=await sb.from('mmr_v2_meta_weekly').select('platform,metric,start_date,end_date,value,checked_at,asset_id').eq('scope','development').order('start_date',{ascending:false}).order('asset_id').order('metric').limit(24);
+  if(generation!==historyGeneration)return;
+  section.replaceChildren();
+  const heading=document.createElement('h2');heading.textContent='Riwayat Statistik Meta';section.appendChild(heading);
+  const note=document.createElement('p');note.className='hint';note.textContent='24 metrik mingguan terbaru • Waktu Pasifik • Sumber Meta Graph API';section.appendChild(note);
+  if(result.error){const error=document.createElement('p');error.textContent='Riwayat statistik belum dapat dimuat. Buka kembali halaman ini untuk mencoba lagi.';section.appendChild(error);return;}
+  if(!result.data.length){const empty=document.createElement('p');empty.textContent='Belum ada statistik tersimpan. Admin dapat menarik statistik melalui Pengaturan.';section.appendChild(empty);return;}
+  const wrap=document.createElement('div');wrap.className='table-wrap';
+  const table=document.createElement('table');
+  const head=table.createTHead().insertRow();
+  for(const label of ['Periode','Platform','Metrik','Jumlah','Diperbarui']){const cell=document.createElement('th');cell.textContent=label;head.appendChild(cell);}
+  const rows=table.createTBody();
+  for(const item of result.data){
+   const row=rows.insertRow();
+   const values=[item.start_date+' – '+item.end_date,item.platform,item.metric==='reach'?'Jangkauan':item.metric==='page_total_media_view_unique'?'Pemirsa unik konten':item.metric,Number(item.value).toLocaleString('id-ID'),new Date(item.checked_at).toLocaleString('id-ID',{timeZone:'Asia/Jakarta'})+' WIB'];
+   values.forEach((value,index)=>{const cell=row.insertCell();cell.textContent=value;if(index===3)cell.className='money';});
+  }
+  wrap.appendChild(table);section.appendChild(wrap);
+ }
+
  function init(){panel=document.createElement('div');panel.className='panel';panel.id='meta-connection';const h=document.createElement('h2');h.textContent='Koneksi Statistik Meta';h.style.fontSize='15px';body=document.createElement('div');panel.append(h,body,button('Muat status',refresh));document.getElementById('page-settings').appendChild(panel);
   document.querySelector('[data-page="settings"]')?.addEventListener('click',refresh);
-  sb.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){generation++;body.replaceChildren();notice('Masuk sebagai admin untuk mengelola koneksi.');}});
+  document.addEventListener('mmr:navigate',event=>{if(['social','crm-dashboard'].includes(event.detail))renderHistory(event.detail);});
+  sb.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){historyGeneration++;document.querySelectorAll('.meta-history').forEach(section=>section.remove());generation++;body.replaceChildren();notice('Masuk sebagai admin untuk mengelola koneksi.');}});
   const q=new URL(location.href);if(q.searchParams.get('meta')==='authorized'){q.searchParams.delete('meta');history.replaceState(null,'',q.pathname+q.search+q.hash);notice('Otorisasi Meta diterima. Buka Pengaturan untuk memilih akun yang akan digunakan.');}
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
