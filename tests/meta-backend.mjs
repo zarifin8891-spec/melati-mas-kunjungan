@@ -5,7 +5,7 @@ const key=Buffer.alloc(32,7),origin='https://preview.example.com';
 const env={SUPABASE_URL:'https://xfujcoemuwopzstxzmir.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'test-service',META_APP_SECRET:'test-secret',META_TOKEN_ENCRYPTION_KEY:key.toString('base64'),META_CALLBACK_URL:origin+'/api/meta?action=callback',META_GRAPH_VERSION:'v26.0',META_ENABLED:'true',VERCEL_ENV:'preview'};
 const permissions=['instagram_basic','instagram_manage_insights','pages_show_list','pages_read_engagement','read_insights'];
 const adminId='11111111-1111-4111-8111-111111111111';
-function harness(){
+function harness({messaging=false}={}){
  const calls=[],states=new Map();let conn=null,active=true,role='admin',graphFail=false,pagination=0,wrongUser=false,missingPermission=false,granular=false;
  const result=x=>new Response(JSON.stringify(x),{status:200});
  const fetcher=async(url,opts={})=>{const u=new URL(url);calls.push({url,opts});let b=opts.body?JSON.parse(opts.headers?.['Content-Type']==='application/json'?opts.body:'null'):null;
@@ -15,9 +15,11 @@ function harness(){
   if(u.pathname==='/rest/v1/rpc/mmr_v2_meta_consume'){const s=states.get(b.p_state);if(!s||s.browser_hash!==b.p_browser||s.revision!==conn.revision)return result([]);states.delete(b.p_state);return result([s]);}
   if(u.pathname==='/rest/v1/mmr_v2_meta_connections'){if(opts.method==='PATCH'){if('eq.'+conn.revision!==u.searchParams.get('revision'))return result([]);conn={...conn,...b};return result([conn]);}return result(conn?[conn]:[]);}
   if(u.pathname.endsWith('/oauth/access_token'))return result({access_token:'private-meta-token',expires_in:3600});
-  if(u.pathname.endsWith('/debug_token'))return result({data:{is_valid:true,app_id:'2044415312932575',type:'SYSTEM_USER',granular_scopes:granular?[{scope:'pages_show_list',target_ids:['123']}]:[],scopes:missingPermission?[]:permissions,expires_at:Math.floor(Date.now()/1000)+3600}});
+  if(u.pathname.endsWith('/debug_token'))return result({data:{is_valid:true,app_id:'2044415312932575',type:'SYSTEM_USER',granular_scopes:granular?[{scope:'pages_show_list',target_ids:['123']}]:[],scopes:missingPermission?[]:[...permissions,...(messaging?['instagram_manage_messages','pages_manage_metadata']:[])],expires_at:Math.floor(Date.now()/1000)+3600}});
   if(graphFail)return new Response(JSON.stringify({error:{code:190,message:'private-meta-token'}}),{status:400});
   if(u.pathname.endsWith('/me/accounts')){pagination++;return result({data:[{id:'123',name:'Melati Mas Residence Cibodas',access_token:'private-page-token',instagram_business_account:{id:'456',username:wrongUser?'other':'melatimasresidence'}}],...(pagination===1?{paging:{next:'https://evil.example/steal',cursors:{after:'next'}}}:{})});}
+  if(u.pathname.endsWith('/123/conversations'))return result({data:[{id:'thread-1',updated_time:'2026-11-19T00:00:00Z',participants:{data:[{id:'456',username:'melatimasresidence'},{id:'789',username:'customer'}]},messages:{data:[{id:'m1',message:'Berapa harga rumah?'}]}}]});
+  if(u.pathname.endsWith('/thread-1/messages'))return result({data:[{id:'m1',message:'Berapa harga rumah?',created_time:'2026-11-19T00:00:00Z',from:{id:'789'}}]});
   if(u.pathname.endsWith('/123'))return result({id:'123',name:'Melati Mas',instagram_business_account:{id:'456',username:'melatimasresidence'}});
   throw Error('unexpected '+u.pathname);
  };
@@ -37,3 +39,37 @@ test('revocation becomes reconnect_required; disconnect erases ciphertext and in
 test('unsupported methods and actions never call providers',async()=>{const h=harness();assert.equal((await h.run('start',{method:'GET'})).statusCode,405);assert.equal((await h.run('publish')).statusCode,404);assert.equal(h.calls.length,0);});
 
 test('system-user granular asset discovery uses granted numeric IDs without me/accounts',async()=>{const h=harness();h.granular();await h.connect();const a=await h.run('assets');assert.equal(a.data.assets[0].page_id,'123');assert(!h.calls.some(x=>x.url.includes('/me/accounts')));assert(!JSON.stringify(a.data).includes('private-'));});
+
+async function selectInstagram(h){
+ await h.connect();
+ const assets=await h.run('assets');
+ const selected=await h.run('select',{body:{page_id:'123',instagram_id:'456',revision:assets.data.revision}});
+ assert.equal(selected.statusCode,200);
+}
+test('Inbox requires messaging permissions without breaking statistics authorization',async()=>{
+ const h=harness();await selectInstagram(h);
+ const r=await h.run('inbox');assert.equal(r.statusCode,409);
+ assert.equal(r.data.error,'inbox_permissions_missing');
+ assert.deepEqual(r.data.meta_permissions,['instagram_manage_messages','pages_manage_metadata']);
+ assert.equal((await h.run('verify')).statusCode,200);
+});
+test('Inbox reads selected Instagram and returns only normalized messages',async()=>{
+ const h=harness({messaging:true});await selectInstagram(h);
+ const list=await h.run('inbox');assert.equal(list.statusCode,200);
+ assert.equal(list.data.conversations[0].username,'customer');
+ assert(!JSON.stringify(list.data).includes('private-page-token'));
+ const handle=list.data.conversations[0].handle;
+ const r=await h.run('inbox_messages',{url:'/api/meta?action=inbox_messages&handle='+encodeURIComponent(handle)});
+ assert.equal(r.statusCode,200);assert.equal(r.data.sender_id,'789');
+ assert.equal(r.data.messages[0].text,'Berapa harga rumah?');
+ assert.equal(r.data.messages[0].outgoing,false);
+});
+test('Inbox rejects tampered handles, changed account and unauthorized roles',async()=>{
+ const h=harness({messaging:true});await selectInstagram(h);
+ const list=await h.run('inbox'),handle=list.data.conversations[0].handle;
+ assert.equal((await h.run('inbox_messages',{url:'/api/meta?action=inbox_messages&handle=bad'})).statusCode,400);
+ h.conn.instagram_id='999';
+ assert.equal((await h.run('inbox_messages',{url:'/api/meta?action=inbox_messages&handle='+encodeURIComponent(handle)})).statusCode,400);
+ h.setRole('marketing');assert.equal((await h.run('inbox')).statusCode,403);
+ h.disable();assert.equal((await h.run('inbox')).statusCode,403);
+});
