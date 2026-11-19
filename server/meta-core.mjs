@@ -22,7 +22,12 @@ export function createHandler({env=process.env,fetcher=fetch,clock=()=>Date.now(
  async function request(url,opts={},code='upstream_unavailable'){
   let r;try{r=await fetcher(url,{...opts,redirect:'error',signal:AbortSignal.timeout(12000)});}catch{throw new SafeError(code,502);}
   let data;try{data=await r.json();}catch{throw new SafeError(code,502);}
-  if(!r.ok||data?.error){if(data?.error?.code===190)throw new SafeError('meta_reconnect_required',409);throw new SafeError(code,502,code==='meta_request_failed'?data?.error?.code:undefined,code==='meta_request_failed'?data?.error?.error_subcode:undefined);}return data;
+  if(!r.ok||data?.error){if(data?.error?.code===190)throw new SafeError('meta_reconnect_required',409);const failure=new SafeError(code,502,code==='meta_request_failed'?data?.error?.code:undefined,code==='meta_request_failed'?data?.error?.error_subcode:undefined);
+   if(code==='meta_request_failed'){
+    const message=typeof data?.error?.message==='string'?data.error.message:'';
+    failure.permissions=['business_management',...REQUIRED].filter(permission=>(message.match(/[a-z_]+/g)||[]).includes(permission));
+   }
+   throw failure;}return data;
  }
  function db(c,path,method='GET',body,representation=false){return request(c.sb+'/rest/v1/'+path,{method,headers:{apikey:c.service,Authorization:'Bearer '+c.service,'Content-Type':'application/json',Prefer:representation?'return=representation':'return=minimal'},...(body===undefined?{}:{body:JSON.stringify(body)})},'storage_unavailable');}
  async function profile(c,id){const rows=await db(c,'profiles?select=id,role,active&id=eq.'+encodeURIComponent(id));if(rows.length!==1||!rows[0].active||rows[0].role!=='admin')throw new SafeError('admin_required',403);return rows[0];}
@@ -138,7 +143,7 @@ export function createHandler({env=process.env,fetcher=fetch,clock=()=>Date.now(
    const safe=e instanceof SafeError?e:new SafeError('internal_error',500);
    // Never include provider error bodies, authorization codes, tokens or secrets.
    if(action==='callback'){res.setHeader('Set-Cookie',COOKIE+'=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0');res.setHeader('Content-Security-Policy',"default-src 'none'; frame-ancestors 'none'");res.setHeader('Content-Type','text/plain; charset=utf-8');res.statusCode=safe.status;return res.end('Koneksi Meta belum selesai ('+safe.message+'). Kembali ke Pengaturan aplikasi dan hubungkan ulang.');}
-   return send(safe.status,{error:safe.message,...(safe.providerCode===undefined?{}:{meta_code:safe.providerCode}),...(safe.providerSubcode===undefined?{}:{meta_subcode:safe.providerSubcode})});
+   return send(safe.status,{error:safe.message,...(safe.providerCode===undefined?{}:{meta_code:safe.providerCode}),...(safe.providerSubcode===undefined?{}:{meta_subcode:safe.providerSubcode}),...(safe.permissions?.length?{meta_permissions:safe.permissions}:{})});
   }
  };
 }
