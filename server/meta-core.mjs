@@ -67,7 +67,7 @@ export function createHandler({env=process.env,fetcher=fetch,clock=()=>Date.now(
   try{
    const u=new URL(req.url,'https://internal.invalid');action=u.searchParams.get('action')||'status';
    if(!['status','start','callback','assets','select','disconnect','verify','weekly_insights'].includes(action))throw new SafeError('not_found',404);
-   const expected=['start','select','disconnect','verify'].includes(action)?'POST':'GET';if(req.method!==expected)throw new SafeError('method_not_allowed',405);
+   const expected=['start','select','disconnect','verify','weekly_insights'].includes(action)?'POST':'GET';if(req.method!==expected)throw new SafeError('method_not_allowed',405);
    c=settings(env);
    // Without server credentials, return no account data and never enable controls.
    if(!c.ready){if(action==='status')return send(200,{configured:false,status:'not_configured',missing:c.missing});throw new SafeError('meta_not_configured',503);}
@@ -130,7 +130,17 @@ export function createHandler({env=process.env,fetcher=fetch,clock=()=>Date.now(
      readGraph:(path,params)=>graph(c,path,bundle.page_token,params),
      pageId:row.page_id,instagramId:row.instagram_id,now:clock()
     });
-    return send(200,{...report,checked_at:new Date(clock()).toISOString()});
+    const checkedAt=new Date(clock()).toISOString();
+    const snapshots=report.metrics.filter(item=>item.status==='available'&&Number.isSafeInteger(item.value)&&item.value>=0).map(item=>({
+     scope:SCOPE,asset_id:item.platform==='Facebook'?row.page_id:row.instagram_id,
+     platform:item.platform,metric:item.metric,start_date:report.start_date,end_date:report.end_date,
+     value:item.value,timezone:report.timezone,checked_at:checkedAt
+    }));
+    if(snapshots.length)await request(c.sb+'/rest/v1/mmr_v2_meta_weekly?on_conflict=scope,asset_id,metric,start_date',{
+     method:'POST',headers:{apikey:c.service,Authorization:'Bearer '+c.service,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=representation'},
+     body:JSON.stringify(snapshots)
+    },'statistics_save_failed');
+    return send(200,{...report,checked_at:checkedAt,saved_count:snapshots.length});
    }
    if(action==='verify'){
     if(row.status!=='connected'||!bundle.page_token)throw new SafeError('select_asset_first',409);
