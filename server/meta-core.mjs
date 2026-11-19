@@ -25,7 +25,7 @@ export function createHandler({env=process.env,fetcher=fetch,clock=()=>Date.now(
   if(!r.ok||data?.error){if(data?.error?.code===190)throw new SafeError('meta_reconnect_required',409);const failure=new SafeError(code,502,code==='meta_request_failed'?data?.error?.code:undefined,code==='meta_request_failed'?data?.error?.error_subcode:undefined);
    if(code==='meta_request_failed'){
     const message=typeof data?.error?.message==='string'?data.error.message:'';
-    failure.permissions=['business_management',...REQUIRED].filter(permission=>(message.match(/[a-z_]+/g)||[]).includes(permission));
+    failure.permissions=['business_management','instagram_manage_messages','pages_manage_metadata','pages_messaging',...REQUIRED].filter(permission=>(message.match(/[a-z_]+/g)||[]).includes(permission));
    }
    throw failure;}return data;
  }
@@ -66,7 +66,7 @@ export function createHandler({env=process.env,fetcher=fetch,clock=()=>Date.now(
   let action,c,row;
   try{
    const u=new URL(req.url,'https://internal.invalid');action=u.searchParams.get('action')||'status';
-   if(!['status','start','callback','assets','select','disconnect','verify','weekly_insights'].includes(action))throw new SafeError('not_found',404);
+   if(!['status','start','callback','assets','select','disconnect','verify','weekly_insights','inbox','inbox_messages'].includes(action))throw new SafeError('not_found',404);
    const expected=['start','select','disconnect','verify','weekly_insights'].includes(action)?'POST':'GET';if(req.method!==expected)throw new SafeError('method_not_allowed',405);
    c=settings(env);
    // Without server credentials, return no account data and never enable controls.
@@ -122,6 +122,47 @@ export function createHandler({env=process.env,fetcher=fetch,clock=()=>Date.now(
     if(p.id!==String(body.page_id)||p.instagram_business_account.id!==body.instagram_id)throw new SafeError('asset_mismatch',400);
     await patch(c,row,{credential:seal({token:bundle.token,page_ids:bundle.page_ids,page_token:p.access_token},c.key),page_id:p.id,page_name:String(p.name||''),instagram_id:p.instagram_business_account.id,instagram_username:p.instagram_business_account.username,status:'connected'});
     return send(200,{status:'connected'});
+   }
+   if(action==='inbox'||action==='inbox_messages'){
+    if(row.status!=='connected'||!bundle.page_token)throw new SafeError('select_asset_first',409);
+    const missing=['instagram_manage_messages','pages_manage_metadata'].filter(permission=>!row.permissions?.includes(permission));
+    if(missing.length){const error=new SafeError('inbox_permissions_missing',409);error.permissions=missing;throw error;}
+    const timestamp=clock();
+    const context={kind:'instagram_thread',account:row.instagram_id,page:row.page_id};
+    function readHandle(value,kind){
+     let payload;try{if(typeof value!=='string'||value.length>8192)throw Error('invalid');payload=unseal(value,c.key);}catch{throw new SafeError('inbox_handle_invalid',400);}
+     if(payload.kind!==kind||payload.account!==row.instagram_id||payload.page!==row.page_id||!Number.isFinite(payload.expires)||payload.expires<=timestamp)throw new SafeError('inbox_handle_invalid',400);
+     return payload;
+    }
+    if(action==='inbox'){
+     const cursor=u.searchParams.get('cursor');
+     const after=cursor?readHandle(cursor,'instagram_cursor').after:null;
+     const response=await graph(c,row.page_id+'/conversations',bundle.page_token,{
+      platform:'instagram',fields:'id,updated_time,participants,messages.limit(1){id,message,created_time,from}',
+      limit:'20',...(after?{after}:{})
+     });
+     if(!Array.isArray(response.data))throw new SafeError('inbox_response_invalid',502);
+     const conversations=response.data.flatMap(thread=>{
+      const sender=thread.participants?.data?.find(person=>person.id!==row.instagram_id);
+      if(typeof thread.id!=='string'||!sender||!/^\d+$/.test(sender.id))return [];
+      const latest=thread.messages?.data?.[0];
+      return [{handle:seal({...context,thread:thread.id,sender:sender.id,username:String(sender.username||'').slice(0,150),expires:timestamp+15*60000},c.key),
+       sender_id:sender.id,account_id:row.instagram_id,username:String(sender.username||'').slice(0,150),
+       updated_at:thread.updated_time||null,last_message:typeof latest?.message==='string'?latest.message.slice(0,500):''}];
+     });
+     const next=response.paging?.next&&response.paging?.cursors?.after;
+     return send(200,{conversations,next_cursor:typeof next==='string'?seal({...context,kind:'instagram_cursor',after:next,expires:timestamp+15*60000},c.key):null});
+    }
+    const handle=u.searchParams.get('handle')||'';
+    if(handle.length>8192)throw new SafeError('inbox_handle_invalid',400);
+    const thread=readHandle(handle,'instagram_thread');
+    const response=await graph(c,encodeURIComponent(thread.thread)+'/messages',bundle.page_token,{fields:'id,message,created_time,from,to',limit:'20'});
+    if(!Array.isArray(response.data))throw new SafeError('inbox_response_invalid',502);
+    return send(200,{account_id:row.instagram_id,sender_id:thread.sender,username:thread.username,
+     messages:response.data.slice(0,20).map(message=>({
+      id:String(message.id||''),text:typeof message.message==='string'?message.message.slice(0,20000):'',
+      created_at:message.created_time||null,outgoing:message.from?.id===row.instagram_id
+     }))});
    }
    if(action==='weekly_insights'){
     if(row.status!=='connected'||!bundle.page_token)throw new SafeError('select_asset_first',409);
