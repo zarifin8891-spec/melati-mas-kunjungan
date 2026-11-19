@@ -37,8 +37,8 @@
    $('crm-count').textContent=`${total} leads • halaman ${page+1} / ${Math.max(1,Math.ceil(total/50))}`;$('crm-prev').disabled=page===0;$('crm-next').disabled=(page+1)*50>=total;
   }catch(e){if(seq!==request)return;showError('crm-error',e);$('crm-body').innerHTML='<tr><td colspan="9" class="empty">Data belum dapat dimuat. Pilih Muat Ulang.</td></tr>';}
  }
- function edit(id){
-  const r=rows.find(x=>x.id===id)||{},editing=!!r.id;
+ function edit(id,preset={}){
+  const r=rows.find(x=>x.id===id)||preset,editing=!!r.id;
   const src=[...sources,...(typeof values==='function'?values('sumber'):[])];
   openDialog(`<h2>${editing?'Edit '+E(code(r)):'Lead Baru'}</h2><p class="notice">Satu lead untuk satu calon pembeli. Catat sumber informasi dan tanggal follow-up berikutnya.</p><form id="crm-lead-form"><div class="form-grid">${field('Tanggal masuk','tanggal_masuk',r.tanggal_masuk||today(),'date',true)}${field('Nama','nama',r.nama,'text',true)}${field('Nomor WhatsApp','telepon',r.telepon,'tel',true)}${select('Sumber','sumber',src,r.sumber||'Walk-in')}${field('Konten / kampanye','kampanye',r.kampanye)}${field('Tipe unit diminati','tipe_unit',r.tipe_unit)}${field('Budget','budget',r.budget||0,'number')}${field('Sales','sales',r.sales||document.body.dataset.userName||'','text',true)}${select('Status','status',stages,r.status||'Lead baru')}${field('Follow-up berikut','next_followup',r.needs_followup_schedule?'':(r.next_followup||today()),'date',true)}<div class="field full"><label for="crm-catatan">Catatan</label><textarea id="crm-catatan" name="catatan" rows="3">${E(r.catatan)}</textarea></div></div><p id="crm-form-error" class="error" role="alert" hidden></p>${actions}</form>`);
   const f=$('crm-lead-form'),newId=r.id||crypto.randomUUID();
@@ -50,8 +50,9 @@
     await session();const p=Object.fromEntries(new FormData(f));for(const k of Object.keys(p))p[k]=p[k].trim();
     if(!(editing&&r.legacy_id&&!phone(p.telepon))&&(phone(p.telepon).length<8||phone(p.telepon).length>18))throw Error('Periksa nomor WhatsApp.');p.budget=Number(p.budget);p.next_followup=p.next_followup||null;
     if(!editing){const dupe=await sb.from('mmr_v2_leads').select('id').eq('telepon_normalized',phone(p.telepon)).limit(1);if(dupe.error)throw dupe.error;if(dupe.data.length&&!confirm('Nomor WhatsApp ini sudah terdaftar. Tetap buat lead terpisah?'))return;}
+    if(!editing&&r.instagram_account_id&&r.instagram_sender_id){p.instagram_account_id=r.instagram_account_id;p.instagram_sender_id=r.instagram_sender_id;}
     const q=editing?sb.from('mmr_v2_leads').update(p).eq('id',r.id).eq('updated_at',r.updated_at):sb.from('mmr_v2_leads').insert({...p,id:newId,created_by:userId});
-    const result=await q.select('id');if(result.error)throw result.error;if(!result.data.length)throw Error('Data telah berubah atau akses ditolak. Tutup form lalu muat ulang sebelum mengedit.');
+    const result=await q.select('id');if(result.error){if(result.error.code==='23505'&&r.instagram_sender_id)throw Error('Pengirim Instagram ini sudah menjadi lead. Muat ulang daftar leads.');throw result.error;}if(!result.data.length)throw Error('Data telah berubah atau akses ditolak. Tutup form lalu muat ulang sebelum mengedit.');
     $('crm-dialog').close();await load();
    }catch(e){showError('crm-form-error',e);}finally{busy=false;if(f.isConnected)f.querySelector('[type=submit]').disabled=false;}
   };
@@ -73,6 +74,7 @@
   };
  }
  function init(){
+  document.addEventListener('mmr:instagram-lead',event=>{if(document.body.dataset.userRole!=='admin')return;edit(null,event.detail);});
   document.querySelector('.nav').insertAdjacentHTML('beforeend','<button data-page="leads">Leads & Follow-up</button>');
   document.querySelector('.content').insertAdjacentHTML('beforeend',`<section class="page crm" id="page-leads"><div class="panel"><div class="panel-head"><div><h2>Leads & Follow-up</h2><small class="hint">Pendataan calon pembeli • V2.0</small></div><button id="crm-add" class="btn primary">+ Lead Baru</button></div><div class="filters"><div class="field"><label for="crm-search">CARI NAMA / WA / SALES</label><input id="crm-search" placeholder="Ketik pencarian..."></div><div class="field"><label for="crm-stage">STATUS</label><select id="crm-stage"><option value="">Semua status</option>${options(filterStages)}</select></div><div class="field"><label for="crm-due">FOLLOW-UP</label><select id="crm-due"><option value="">Semua jadwal</option><option value="late">Terlambat</option><option value="today">Hari ini</option><option value="pending">Perlu dijadwalkan</option></select></div><button id="crm-reload" class="btn secondary">Muat Ulang</button></div><p class="hint">Petunjuk: tambah lead, lalu gunakan Follow-up untuk mencatat setiap kontak. Jadwal berikutnya diperbarui otomatis. Gunakan Kunjungan / Closing untuk mencatat kunjungan, booking dan akad. Status closing mengikuti transaksi yang tersimpan.</p><div id="crm-error" class="error" role="alert" hidden></div><div class="table-wrap"><table><thead><tr>${['ID / Masuk','Nama / WhatsApp','Sumber / Kampanye','Tipe Unit','Budget','Status','Sales','Follow-up','Aksi'].map(x=>'<th>'+x+'</th>').join('')}</tr></thead><tbody id="crm-body"></tbody></table></div><div class="pager"><span id="crm-count"></span><div class="actions"><button id="crm-prev" class="btn secondary">Sebelumnya</button><button id="crm-next" class="btn secondary">Berikutnya</button></div></div></div></section>`);
   document.body.insertAdjacentHTML('beforeend','<dialog class="crm-dialog" id="crm-dialog" aria-label="Form Leads dan Follow-up"></dialog>');
